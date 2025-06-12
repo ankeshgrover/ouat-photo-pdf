@@ -58,7 +58,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            margin-bottom: 5px;
+            margin-bottom: 10px;
             position: relative;
             overflow: visible;
             border: 2px dashed #ccc;
@@ -230,8 +230,8 @@
 <body>
     <div class="main-container">
         <div class="title">
-            <h1>Once Upon A Time Photo Uploader</h1>
-            <p>Upload 4 photos and add captions to create your photo pdf page for your book</p>
+            <h1>Once Upon A Time Photo PDF Page Generator</h1>
+            <p>Upload 4 photos and add captions to create your personalized chapter photo page</p>
         </div>
         
         <div class="container">
@@ -315,17 +315,25 @@
                 return;
             }
             
-            // Validate file size (max 10MB)
+            // Validate file size (max 30MB)
             if (file.size > 30 * 1024 * 1024) {
                 alert('File size too large. Please select an image under 30MB.');
                 return;
+            }
+            
+            // Show loading indicator for large files
+            const placeholder = document.querySelector(`[data-position="${position}"] .image-placeholder`);
+            const uploadPrompt = placeholder.querySelector('.upload-prompt');
+            
+            if (file.size > 5 * 1024 * 1024) { // Show loading for files > 5MB
+                uploadPrompt.innerHTML = '<span class="icon">⏳</span><div>Processing large image...</div>';
             }
             
             const reader = new FileReader();
             reader.onload = function(e) {
                 const img = new Image();
                 img.onload = function() {
-                    // Store the image data
+                    // Store the original high-res image for PDF
                     photos[position] = {
                         file: file,
                         dataUrl: e.target.result,
@@ -333,12 +341,55 @@
                         height: img.height
                     };
                     
-                    // Update the display
-                    displayImage(position, e.target.result);
+                    // Create optimized preview version for display
+                    createOptimizedPreview(position, img, e.target.result);
                 };
                 img.src = e.target.result;
             };
             reader.readAsDataURL(file);
+        }
+        
+        function createOptimizedPreview(position, originalImg, originalDataUrl) {
+            // Create a canvas for optimized preview
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Set preview dimensions (2x display size for retina screens)
+            const previewWidth = 250; // 2x the 125px display width
+            const previewHeight = 312; // 2x the 156px display height
+            
+            canvas.width = previewWidth;
+            canvas.height = previewHeight;
+            
+            // Calculate aspect ratio and crop/fit
+            const aspectRatio = originalImg.width / originalImg.height;
+            const targetAspectRatio = previewWidth / previewHeight;
+            
+            let drawWidth, drawHeight, offsetX = 0, offsetY = 0;
+            
+            if (aspectRatio > targetAspectRatio) {
+                // Image is wider - fit height and crop width
+                drawHeight = previewHeight;
+                drawWidth = previewHeight * aspectRatio;
+                offsetX = (previewWidth - drawWidth) / 2;
+            } else {
+                // Image is taller - fit width and crop height
+                drawWidth = previewWidth;
+                drawHeight = previewWidth / aspectRatio;
+                offsetY = (previewHeight - drawHeight) / 2;
+            }
+            
+            // Draw optimized preview
+            ctx.drawImage(originalImg, offsetX, offsetY, drawWidth, drawHeight);
+            
+            // Get optimized data URL with compression
+            const optimizedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+            
+            // Store optimized version for preview
+            photos[position].previewDataUrl = optimizedDataUrl;
+            
+            // Update the display with optimized preview
+            displayImage(position, optimizedDataUrl);
         }
         
         function displayImage(position, dataUrl) {
@@ -475,7 +526,28 @@
                     // Add image if available
                     if (photo && photo.dataUrl) {
                         try {
-                            pdf.addImage(photo.dataUrl, 'JPEG', imageX, imageY, imageWidth, imageHeight);
+                            // Calculate proper scaling to maintain aspect ratio
+                            const originalAspectRatio = photo.width / photo.height;
+                            const containerAspectRatio = imageWidth / imageHeight;
+                            
+                            let finalWidth, finalHeight, finalX, finalY;
+                            
+                            if (originalAspectRatio > containerAspectRatio) {
+                                // Image is wider - fit to width, center vertically
+                                finalWidth = imageWidth;
+                                finalHeight = imageWidth / originalAspectRatio;
+                                finalX = imageX;
+                                finalY = imageY + (imageHeight - finalHeight) / 2;
+                            } else {
+                                // Image is taller - fit to height, center horizontally
+                                finalHeight = imageHeight;
+                                finalWidth = imageHeight * originalAspectRatio;
+                                finalX = imageX + (imageWidth - finalWidth) / 2;
+                                finalY = imageY;
+                            }
+                            
+                            // Use original high-resolution image for PDF with proper aspect ratio
+                            pdf.addImage(photo.dataUrl, 'JPEG', finalX, finalY, finalWidth, finalHeight);
                         } catch (imgError) {
                             console.warn(`Could not add image ${index + 1}:`, imgError);
                             // Draw placeholder rectangle
