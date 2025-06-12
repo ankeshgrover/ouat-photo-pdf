@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Photo Grid Creator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #e9deca;
+        }
+        
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .title {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .container {
+            width: 365px;
+            height: 490px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 10px;
+            background-color: white;
+            padding: 45px 15px;
+            box-sizing: border-box;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 130px;
+            place-self: center;
+        }
+        
+        .image-placeholder {
+            width: 125px;
+            height: 156px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 5px;
+            position: relative;
+            overflow: visible;
+            border: 2px dashed #ccc;
+            background-color: #f9f9f9;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .image-placeholder:hover {
+            border-color: #999;
+            background-color: #f0f0f0;
+        }
+        
+        .image-placeholder.has-image {
+            border: none;
+            background-color: transparent;
+        }
+        
+        .top-right .image-placeholder::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 125px;
+            height: 156px;
+            border: 1px solid black;
+            background-color: transparent;
+            z-index: 0;
+        }
+        
+        .bottom-left .image-placeholder::before {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: -8px;
+            width: 125px;
+            height: 156px;
+            border: 1px solid black;
+            background-color: transparent;
+            z-index: 0;
+        }
+        
+        .image-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            z-index: 1;
+            position: relative;
+        }
+        
+        .upload-prompt {
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .upload-prompt .icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+            display: block;
+        }
+        
+        .description {
+            text-align: center;
+            font-size: 8px;
+            line-height: 1;
+            max-width: 130px;
+            color: #000;
+            min-height: 24px;
+        }
+        
+        .caption-input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            padding: 0;
+            font-size: 8px;
+            text-align: center;
+            line-height: 1.2;
+            resize: none;
+            min-height: 24px;
+            max-height: 60px;
+            font-family: 'DM Sans', Arial, sans-serif;
+            color: #000;
+            overflow: hidden;
+            word-wrap: break-word;
+            max-width: 130px;
+        }
+        
+        .caption-input:focus {
+            outline: 1px solid #ccc;
+            outline-offset: 2px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 2px;
+        }
+        
+        .caption-input::placeholder {
+            color: #999;
+            font-style: italic;
+        }
+        
+        .hidden-input {
+            display: none;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #45a049;
+        }
+        
+        .btn-secondary {
+            background-color: #f44336;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #da190b;
+        }
+        
+        .remove-btn {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            display: none;
+            z-index: 2;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .image-placeholder.has-image .remove-btn {
+            display: flex;
+        }
+        
+        .remove-btn:hover {
+            background-color: #da190b;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="title">
+            <h1>Once Upon A Time Photo Uploader</h1>
+            <p>Upload 4 photos and add captions to create your photo pdf page for your book</p>
+        </div>
+        
+        <div class="container">
+            <div class="item top-left" data-position="0">
+                <div class="image-placeholder" onclick="triggerFileInput(0)">
+                    <div class="upload-prompt">
+                        <span class="icon">📷</span>
+                        <div>Click to upload<br>photo</div>
+                    </div>
+                    <button class="remove-btn" onclick="removeImage(0, event)">×</button>
+                </div>
+                <textarea class="caption-input" placeholder="Add your caption here..." 
+                         onInput="updateCaption(0, this.value)"></textarea>
+            </div>
+            
+            <div class="item top-right" data-position="1">
+                <div class="image-placeholder" onclick="triggerFileInput(1)">
+                    <div class="upload-prompt">
+                        <span class="icon">📷</span>
+                        <div>Click to upload<br>photo</div>
+                    </div>
+                    <button class="remove-btn" onclick="removeImage(1, event)">×</button>
+                </div>
+                <textarea class="caption-input" placeholder="Add your caption here..." 
+                         onInput="updateCaption(1, this.value)"></textarea>
+            </div>
+            
+            <div class="item bottom-left" data-position="2">
+                <div class="image-placeholder" onclick="triggerFileInput(2)">
+                    <div class="upload-prompt">
+                        <span class="icon">📷</span>
+                        <div>Click to upload<br>photo</div>
+                    </div>
+                    <button class="remove-btn" onclick="removeImage(2, event)">×</button>
+                </div>
+                <textarea class="caption-input" placeholder="Add your caption here..." 
+                         onInput="updateCaption(2, this.value)"></textarea>
+            </div>
+            
+            <div class="item bottom-right" data-position="3">
+                <div class="image-placeholder" onclick="triggerFileInput(3)">
+                    <div class="upload-prompt">
+                        <span class="icon">📷</span>
+                        <div>Click to upload<br>photo</div>
+                    </div>
+                    <button class="remove-btn" onclick="removeImage(3, event)">×</button>
+                </div>
+                <textarea class="caption-input" placeholder="Add your caption here..." 
+                         onInput="updateCaption(3, this.value)"></textarea>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn btn-secondary" onclick="clearAll()">Clear All</button>
+            <button class="btn btn-primary" onclick="generatePDF()">Generate PDF</button>
+        </div>
+        
+        <!-- Hidden file inputs -->
+        <input type="file" id="fileInput0" class="hidden-input" accept="image/*" onchange="handleFileSelect(0, this)">
+        <input type="file" id="fileInput1" class="hidden-input" accept="image/*" onchange="handleFileSelect(1, this)">
+        <input type="file" id="fileInput2" class="hidden-input" accept="image/*" onchange="handleFileSelect(2, this)">
+        <input type="file" id="fileInput3" class="hidden-input" accept="image/*" onchange="handleFileSelect(3, this)">
+    </div>
+
+    <script>
+        // Store uploaded images and captions
+        let photos = [null, null, null, null];
+        let captions = ['', '', '', ''];
+        
+        function triggerFileInput(position) {
+            document.getElementById(`fileInput${position}`).click();
+        }
+        
+        function handleFileSelect(position, input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                alert('Please select a valid image file.');
+                return;
+            }
+            
+            // Validate file size (max 10MB)
+            if (file.size > 30 * 1024 * 1024) {
+                alert('File size too large. Please select an image under 30MB.');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    // Store the image data
+                    photos[position] = {
+                        file: file,
+                        dataUrl: e.target.result,
+                        width: img.width,
+                        height: img.height
+                    };
+                    
+                    // Update the display
+                    displayImage(position, e.target.result);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function displayImage(position, dataUrl) {
+            const placeholder = document.querySelector(`[data-position="${position}"] .image-placeholder`);
+            const uploadPrompt = placeholder.querySelector('.upload-prompt');
+            
+            // Hide upload prompt
+            uploadPrompt.style.display = 'none';
+            
+            // Create or update image element
+            let imgElement = placeholder.querySelector('img');
+            if (!imgElement) {
+                imgElement = document.createElement('img');
+                placeholder.appendChild(imgElement);
+            }
+            
+            imgElement.src = dataUrl;
+            imgElement.alt = `Uploaded photo ${position + 1}`;
+            
+            // Add has-image class for styling
+            placeholder.classList.add('has-image');
+        }
+        
+        function removeImage(position, event) {
+            event.stopPropagation();
+            
+            // Clear stored data
+            photos[position] = null;
+            
+            // Reset file input
+            document.getElementById(`fileInput${position}`).value = '';
+            
+            // Update display
+            const placeholder = document.querySelector(`[data-position="${position}"] .image-placeholder`);
+            const imgElement = placeholder.querySelector('img');
+            const uploadPrompt = placeholder.querySelector('.upload-prompt');
+            
+            if (imgElement) {
+                imgElement.remove();
+            }
+            
+            uploadPrompt.style.display = 'block';
+            placeholder.classList.remove('has-image');
+        }
+        
+        function updateCaption(position, text) {
+            captions[position] = text;
+        }
+        
+        function clearAll() {
+            if (confirm('Are you sure you want to clear all photos and captions?')) {
+                for (let i = 0; i < 4; i++) {
+                    removeImage(i, { stopPropagation: () => {} });
+                    document.querySelector(`[data-position="${i}"] .caption-input`).value = '';
+                    captions[i] = '';
+                }
+            }
+        }
+        
+        function generatePDF() {
+            // Check if at least one photo is uploaded
+            const hasPhotos = photos.some(photo => photo !== null);
+            if (!hasPhotos) {
+                alert('Please upload at least one photo before generating PDF.');
+                return;
+            }
+            
+            try {
+                const { jsPDF } = window.jspdf;
+                
+                // A5 dimensions in points (72 points per inch)
+                // A5 = 5.83 x 8.27 inches = 420 x 595 points
+                const pageWidth = 420; // points
+                const pageHeight = 595; // points
+                const padding = 36; // 0.5 inch = 36 points
+                
+                // Create PDF with A5 size
+                const pdf = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'pt',
+                    format: [pageWidth, pageHeight]
+                });
+                
+                // Calculate available space after padding
+                const availableWidth = pageWidth - (2 * padding);
+                const availableHeight = pageHeight - (2 * padding);
+                
+                // Grid layout calculations
+                const gridCols = 2;
+                const gridRows = 2;
+                const gapSize = 10;
+                
+                const itemWidth = (availableWidth - gapSize) / gridCols;
+                const itemHeight = (availableHeight - gapSize) / gridRows;
+                
+                // Image dimensions within each item (leaving space for caption)
+                const captionHeight = 30; // Space reserved for caption
+                const imageWidth = itemWidth * 0.9; // 90% of item width
+                const imageHeight = (itemHeight - captionHeight) * 0.9;
+                
+                const positions = [
+                    { row: 0, col: 0, class: 'top-left' },
+                    { row: 0, col: 1, class: 'top-right' },
+                    { row: 1, col: 0, class: 'bottom-left' },
+                    { row: 1, col: 1, class: 'bottom-right' }
+                ];
+                
+                // Process each position
+                positions.forEach((pos, index) => {
+                    const photo = photos[index];
+                    const caption = captions[index];
+                    
+                    // Calculate position
+                    const x = padding + (pos.col * (itemWidth + gapSize));
+                    const y = padding + (pos.row * (itemHeight + gapSize));
+                    
+                    // Center image within item
+                    const imageX = x + (itemWidth - imageWidth) / 2;
+                    const imageY = y + (itemHeight - imageHeight - captionHeight) / 2;
+                    
+                    // Add decorative borders for specific positions
+                    if (pos.class === 'top-right') {
+                        // Draw shadow border (top-right offset)
+                        pdf.setDrawColor(0, 0, 0);
+                        pdf.setLineWidth(0.5);
+                        pdf.rect(imageX + 8, imageY - 8, imageWidth, imageHeight);
+                    } else if (pos.class === 'bottom-left') {
+                        // Draw shadow border (bottom-left offset)
+                        pdf.setDrawColor(0, 0, 0);
+                        pdf.setLineWidth(0.5);
+                        pdf.rect(imageX - 8, imageY + 8, imageWidth, imageHeight);
+                    }
+                    
+                    // Add image if available
+                    if (photo && photo.dataUrl) {
+                        try {
+                            pdf.addImage(photo.dataUrl, 'JPEG', imageX, imageY, imageWidth, imageHeight);
+                        } catch (imgError) {
+                            console.warn(`Could not add image ${index + 1}:`, imgError);
+                            // Draw placeholder rectangle
+                            pdf.setFillColor(240, 240, 240);
+                            pdf.rect(imageX, imageY, imageWidth, imageHeight, 'F');
+                            
+                            // Add "No Image" text
+                            pdf.setTextColor(100, 100, 100);
+                            pdf.setFontSize(12);
+                            pdf.text('No Image', imageX + imageWidth/2, imageY + imageHeight/2, { align: 'center' });
+                        }
+                    } else {
+                        // Draw placeholder for missing image
+                        pdf.setFillColor(249, 249, 249);
+                        pdf.setDrawColor(200, 200, 200);
+                        pdf.setLineWidth(1);
+                        pdf.rect(imageX, imageY, imageWidth, imageHeight, 'FD');
+                        
+                        // Add placeholder text
+                        pdf.setTextColor(150, 150, 150);
+                        pdf.setFontSize(10);
+                        pdf.text('Photo ' + (index + 1), imageX + imageWidth/2, imageY + imageHeight/2, { align: 'center' });
+                    }
+                    
+                    // Add caption with DM Sans font
+                    if (caption.trim()) {
+                        pdf.setTextColor(0, 0, 0);
+                        pdf.setFontSize(9); // 9pt as requested
+                        
+                        // Position caption below image
+                        const captionY = imageY + imageHeight + 15;
+                        const captionX = x + itemWidth/2;
+                        
+                        // Split text into lines that fit within the item width
+                        const maxWidth = itemWidth - 10; // Small margin
+                        const lines = pdf.splitTextToSize(caption, maxWidth);
+                        
+                        // Center and add each line
+                        lines.forEach((line, lineIndex) => {
+                            pdf.text(line, captionX, captionY + (lineIndex * 12), { align: 'center' });
+                        });
+                    }
+                });
+                
+                // Save the PDF
+                const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
+                pdf.save(`family-photo-grid-${timestamp}.pdf`);
+                
+            } catch (error) {
+                console.error('PDF generation error:', error);
+                alert('There was an error generating the PDF. Please try again.');
+            }
+        }
+        
+        // Add drag and drop functionality
+        document.querySelectorAll('.image-placeholder').forEach((placeholder, index) => {
+            placeholder.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.style.backgroundColor = '#e0e0e0';
+            });
+            
+            placeholder.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                this.style.backgroundColor = '';
+            });
+            
+            placeholder.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.style.backgroundColor = '';
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    const file = files[0];
+                    if (file.type.startsWith('image/')) {
+                        // Simulate file input change
+                        const input = document.getElementById(`fileInput${index}`);
+                        const dt = new DataTransfer();
+                        dt.items.add(file);
+                        input.files = dt.files;
+                        handleFileSelect(index, input);
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
