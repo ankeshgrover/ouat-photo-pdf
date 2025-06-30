@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Family Photo Grid Creator</title>
+    <title>Photo Grid Creator</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400&display=swap" rel="stylesheet">
@@ -14,13 +14,87 @@
             padding: 20px;
             font-family: Arial, sans-serif;
             background-color: #e9deca;
-        }
-        
-        .main-container {
             display: flex;
             flex-direction: column;
             align-items: center;
+            min-height: 100vh;
+        }
+        
+        .layout-selector {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            text-align: center;
+            margin-bottom: 30px;
+            max-width: 500px;
+        }
+        
+        .layout-selector h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .layout-options {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        .layout-option {
+            padding: 20px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            min-width: 150px;
+        }
+        
+        .layout-option:hover {
+            border-color: #4CAF50;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .layout-option .icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        .layout-option h3 {
+            margin: 10px 0 5px 0;
+            color: #333;
+        }
+        
+        .layout-option p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .main-container {
+            display: none;
+            flex-direction: column;
+            align-items: center;
             gap: 20px;
+        }
+        
+        .back-btn {
+            background: #666;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .back-btn:hover {
+            background: #555;
         }
         
         .title {
@@ -33,14 +107,28 @@
             width: 365px;
             height: 490px;
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: 1fr 1fr;
             gap: 10px;
             background-color: white;
             padding: 45px 15px;
             box-sizing: border-box;
             justify-content: center;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        
+        /* Four image grid layout */
+        .container.four-image {
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+        }
+        
+        /* Single image layout */
+        .container.single-image {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
         }
         
         .item {
@@ -52,8 +140,6 @@
         }
         
         .image-placeholder {
-            width: 125px;
-            height: 156px;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -65,6 +151,19 @@
             background-color: #f9f9f9;
             cursor: pointer;
             transition: all 0.3s ease;
+        }
+        
+        /* Four image placeholder styling */
+        .four-image .image-placeholder {
+            width: 125px;
+            height: 156px;
+        }
+        
+        /* Single image placeholder styling */
+        .single-image .image-placeholder {
+            width: 240px;
+            height: 340px;
+            margin-bottom: 15px;
         }
         
         .image-placeholder:hover {
@@ -105,32 +204,145 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            object-position: center;
             display: block;
             z-index: 1;
             position: relative;
         }
         
+        .crop-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            z-index: 10;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        
+        .crop-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow: auto;
+        }
+        
+        .crop-preview {
+            max-width: 400px;
+            max-height: 400px;
+            border: 2px solid #ddd;
+            margin: 10px auto;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .crop-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: var(--crop-x, center) var(--crop-y, center);
+        }
+        
+        .crop-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .crop-slider-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .crop-slider-group label {
+            min-width: 80px;
+            font-size: 14px;
+        }
+        
+        .crop-slider {
+            flex: 1;
+            margin: 0 10px;
+        }
+        
+        .crop-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        
+        .fit-warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 12px;
+            margin-top: 5px;
+            text-align: center;
+            display: none;
+        }
+        
         .upload-prompt {
             text-align: center;
             color: #666;
-            font-size: 12px;
             pointer-events: none;
             z-index: 1;
         }
         
         .upload-prompt .icon {
-            font-size: 24px;
             margin-bottom: 5px;
             display: block;
         }
         
+        .four-image .upload-prompt .icon {
+            font-size: 24px;
+        }
+        
+        .single-image .upload-prompt .icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        
+        .four-image .upload-prompt .text {
+            font-size: 12px;
+        }
+        
+        .single-image .upload-prompt .text {
+            font-size: 16px;
+        }
+        
+        .single-image .upload-prompt .size {
+            font-size: 12px;
+            margin-top: 5px;
+            color: #999;
+        }
+        
         .description {
             text-align: center;
-            font-size: 8px;
-            line-height: 1;
-            max-width: 130px;
+            line-height: 1.2;
             color: #000;
             min-height: 24px;
+        }
+        
+        .four-image .description {
+            font-size: 8px;
+            max-width: 130px;
+        }
+        
+        .single-image .description {
+            font-size: 9px;
+            max-width: 285px;
+            min-height: 30px;
+            color: #333;
         }
         
         .caption-input {
@@ -138,17 +350,29 @@
             border: none;
             background: transparent;
             padding: 0;
-            font-size: 8px;
             text-align: center;
-            line-height: 1.2;
             resize: none;
-            min-height: 24px;
-            max-height: 60px;
             font-family: 'DM Sans', Arial, sans-serif;
-            color: #000;
             overflow: hidden;
             word-wrap: break-word;
+        }
+        
+        .four-image .caption-input {
+            font-size: 8px;
+            line-height: 1.2;
+            min-height: 24px;
+            max-height: 60px;
             max-width: 130px;
+            color: #000;
+        }
+        
+        .single-image .caption-input {
+            font-size: 9px;
+            line-height: 1.3;
+            min-height: 30px;
+            max-height: 60px;
+            max-width: 285px;
+            color: #333;
         }
         
         .caption-input:focus {
@@ -161,6 +385,106 @@
         .caption-input::placeholder {
             color: #999;
             font-style: italic;
+        }
+        
+        .remove-btn {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            display: none;
+            z-index: 2;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .four-image .remove-btn {
+            top: -5px;
+            right: -5px;
+        }
+        
+        .single-image .remove-btn {
+            top: -10px;
+            right: -10px;
+            width: 24px;
+            height: 24px;
+            font-size: 14px;
+        }
+        
+        .image-placeholder.has-image .remove-btn {
+            display: flex;
+        }
+        
+        .remove-btn:hover {
+            background-color: #da190b;
+        }
+        
+        .crop-btn {
+            position: absolute;
+            bottom: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            padding: 4px 8px;
+            display: none;
+            z-index: 3;
+        }
+        
+        .image-placeholder.has-image .crop-btn {
+            display: block;
+        }
+        
+        /* Single image decorative lines */
+        .line {
+            position: absolute;
+            background-color: black;
+        }
+        
+        .line.top-right-horizontal {
+            top: 30px;
+            right: 0;
+            width: 75px;
+            height: 1px;
+        }
+        
+        .line.top-right-vertical {
+            top: 0;
+            right: 20px;
+            width: 1px;
+            height: 140px;
+        }
+        
+        .line.top-right-vertical2 {
+            top: 0;
+            right: 30px;
+            width: 1px;
+            height: 80px;
+        }
+        
+        .line.bottom-left-horizontal {
+            bottom: 30px;
+            left: 0;
+            width: 120px;
+            height: 1px;
+        }
+        
+        .line.bottom-left-vertical {
+            bottom: 0;
+            left: 30px;
+            width: 1px;
+            height: 90px;
+        }
+        
+        .line.bottom-left-short-horizontal {
+            bottom: 44px;
+            left: 0px;
+            width: 70px;
+            height: 1px;
         }
         
         .hidden-input {
@@ -199,89 +523,40 @@
         .btn-secondary:hover {
             background-color: #da190b;
         }
-        
-        .remove-btn {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background-color: #f44336;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-size: 12px;
-            display: none;
-            z-index: 2;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .image-placeholder.has-image .remove-btn {
-            display: flex;
-        }
-        
-        .remove-btn:hover {
-            background-color: #da190b;
-        }
     </style>
 </head>
 <body>
-    <div class="main-container">
-        <div class="title">
-            <h1>Once Upon A Time Photo PDF Page Generator</h1>
-            <p>Upload 4 photos and add captions to create your personalized chapter photo page</p>
+    <!-- Layout Selection Screen -->
+    <div class="layout-selector" id="layoutSelector">
+        <h1>Choose Your Photo Grid Layout</h1>
+        <p>Select the layout that best fits your needs</p>
+        
+        <div class="layout-options">
+            <div class="layout-option" onclick="selectLayout('single')">
+                <span class="icon">🖼️</span>
+                <h3>Single Image</h3>
+                <p>Perfect for highlighting one special photo with decorative elements</p>
+            </div>
+            
+            <div class="layout-option" onclick="selectLayout('four')">
+                <span class="icon">🏞️</span>
+                <h3>Four Image Grid</h3>
+                <p>Create a beautiful collage with four photos and captions</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Application Container -->
+    <div class="main-container" id="mainContainer">
+        <button class="back-btn" onclick="goBack()">← Back to Layout Selection</button>
+        
+        <div class="title" id="titleSection">
+            <h1 id="titleText">Create Your Photo Grid</h1>
+            <p id="subtitleText">Upload photos and add captions to create your personalized layout</p>
         </div>
         
-        <div class="container">
-            <div class="item top-left" data-position="0">
-                <div class="image-placeholder" onclick="triggerFileInput(0)">
-                    <div class="upload-prompt">
-                        <span class="icon">📷</span>
-                        <div>Click to upload<br>photo</div>
-                    </div>
-                    <button class="remove-btn" onclick="removeImage(0, event)">×</button>
-                </div>
-                <textarea class="caption-input" placeholder="Add your caption here..." 
-                         onInput="updateCaption(0, this.value)"></textarea>
-            </div>
-            
-            <div class="item top-right" data-position="1">
-                <div class="image-placeholder" onclick="triggerFileInput(1)">
-                    <div class="upload-prompt">
-                        <span class="icon">📷</span>
-                        <div>Click to upload<br>photo</div>
-                    </div>
-                    <button class="remove-btn" onclick="removeImage(1, event)">×</button>
-                </div>
-                <textarea class="caption-input" placeholder="Add your caption here..." 
-                         onInput="updateCaption(1, this.value)"></textarea>
-            </div>
-            
-            <div class="item bottom-left" data-position="2">
-                <div class="image-placeholder" onclick="triggerFileInput(2)">
-                    <div class="upload-prompt">
-                        <span class="icon">📷</span>
-                        <div>Click to upload<br>photo</div>
-                    </div>
-                    <button class="remove-btn" onclick="removeImage(2, event)">×</button>
-                </div>
-                <textarea class="caption-input" placeholder="Add your caption here..." 
-                         onInput="updateCaption(2, this.value)"></textarea>
-            </div>
-            
-            <div class="item bottom-right" data-position="3">
-                <div class="image-placeholder" onclick="triggerFileInput(3)">
-                    <div class="upload-prompt">
-                        <span class="icon">📷</span>
-                        <div>Click to upload<br>photo</div>
-                    </div>
-                    <button class="remove-btn" onclick="removeImage(3, event)">×</button>
-                </div>
-                <textarea class="caption-input" placeholder="Add your caption here..." 
-                         onInput="updateCaption(3, this.value)"></textarea>
-            </div>
+        <div class="container" id="container">
+            <!-- Dynamic content will be inserted here -->
         </div>
         
         <div class="controls">
@@ -289,17 +564,206 @@
             <button class="btn btn-primary" onclick="generatePDF()">Generate PDF</button>
         </div>
         
-        <!-- Hidden file inputs -->
-        <input type="file" id="fileInput0" class="hidden-input" accept="image/*" onchange="handleFileSelect(0, this)">
-        <input type="file" id="fileInput1" class="hidden-input" accept="image/*" onchange="handleFileSelect(1, this)">
-        <input type="file" id="fileInput2" class="hidden-input" accept="image/*" onchange="handleFileSelect(2, this)">
-        <input type="file" id="fileInput3" class="hidden-input" accept="image/*" onchange="handleFileSelect(3, this)">
+        <!-- Hidden file inputs (dynamically created) -->
+        <div id="fileInputContainer"></div>
+        
+        <!-- Crop overlay -->
+        <div class="crop-overlay" id="cropOverlay">
+            <div class="crop-container">
+                <h3>Adjust Image Crop</h3>
+                <p>Adjust how your image will appear in the PDF:</p>
+                
+                <div class="crop-preview" id="cropPreview">
+                    <img id="cropPreviewImg" src="" alt="Crop preview">
+                </div>
+                
+                <div class="crop-controls">
+                    <div class="crop-slider-group">
+                        <label>Horizontal:</label>
+                        <input type="range" class="crop-slider" id="cropX" min="0" max="100" value="50" 
+                               onInput="updateCropPreview()">
+                    </div>
+                    <div class="crop-slider-group">
+                        <label>Vertical:</label>
+                        <input type="range" class="crop-slider" id="cropY" min="0" max="100" value="50" 
+                               onInput="updateCropPreview()">
+                    </div>
+                    <div class="crop-slider-group">
+                        <label>Zoom:</label>
+                        <input type="range" class="crop-slider" id="cropZoom" min="100" max="300" value="100" 
+                               onInput="updateCropPreview()">
+                    </div>
+                </div>
+                
+                <div class="crop-buttons">
+                    <button class="btn btn-secondary" onclick="cancelCrop()">Cancel</button>
+                    <button class="btn btn-primary" onclick="applyCrop()">Apply Crop</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        // Store uploaded images and captions
-        let photos = [null, null, null, null];
-        let captions = ['', '', '', ''];
+        // Global variables
+        let currentLayout = null;
+        let photos = null;
+        let captions = null;
+        let currentCropData = null;
+        
+        function selectLayout(layout) {
+            currentLayout = layout;
+            
+            // Hide layout selector
+            document.getElementById('layoutSelector').style.display = 'none';
+            
+            // Show main container
+            document.getElementById('mainContainer').style.display = 'flex';
+            
+            // Initialize based on layout
+            if (layout === 'single') {
+                initializeSingleLayout();
+            } else if (layout === 'four') {
+                initializeFourLayout();
+            }
+        }
+        
+        function goBack() {
+            // Show layout selector
+            document.getElementById('layoutSelector').style.display = 'block';
+            
+            // Hide main container
+            document.getElementById('mainContainer').style.display = 'none';
+            
+            // Reset data
+            currentLayout = null;
+            photos = null;
+            captions = null;
+            
+            // Clear container
+            document.getElementById('container').innerHTML = '';
+            document.getElementById('fileInputContainer').innerHTML = '';
+        }
+        
+        function initializeSingleLayout() {
+            // Initialize single layout variables
+            photos = null;
+            captions = '';
+            
+            // Update titles
+            document.getElementById('titleText').textContent = 'Create Your Single Image Layout';
+            document.getElementById('subtitleText').textContent = 'Upload one photo and add a caption to create your personalized image layout';
+            
+            // Set container class
+            const container = document.getElementById('container');
+            container.className = 'container single-image';
+            
+            // Add decorative lines
+            container.innerHTML = `
+                <!-- Corner decorative lines -->
+                <div class="line top-right-horizontal"></div>
+                <div class="line top-right-vertical"></div>
+                <div class="line top-right-vertical2"></div>
+                <div class="line bottom-left-horizontal"></div>
+                <div class="line bottom-left-vertical"></div>
+                <div class="line bottom-left-short-horizontal"></div>
+                
+                <div class="image-container">
+                    <div class="image-placeholder" onclick="triggerFileInput(0)">
+                        <div class="upload-prompt">
+                            <span class="icon">📷</span>
+                            <div class="text">Click to upload photo</div>
+                            <div class="size">240 × 340 px</div>
+                        </div>
+                        <button class="remove-btn" onclick="removeImage(0, event)">×</button>
+                        <button class="btn btn-secondary crop-btn" onclick="openCropModal(0)">Crop</button>
+                        <div class="fit-warning">This image may not fit well. Consider cropping.</div>
+                    </div>
+                </div>
+                
+                <textarea class="caption-input" placeholder="Add your caption here..." 
+                         onInput="updateCaption(0, this.value)"></textarea>
+            `;
+            
+            // Create file input
+            document.getElementById('fileInputContainer').innerHTML = `
+                <input type="file" id="fileInput0" class="hidden-input" accept="image/*" onchange="handleFileSelect(0, this)">
+            `;
+        }
+        
+        function initializeFourLayout() {
+            // Initialize four layout variables
+            photos = [null, null, null, null];
+            captions = ['', '', '', ''];
+            
+            // Update titles
+            document.getElementById('titleText').textContent = 'Create Your Family Photo Grid';
+            document.getElementById('subtitleText').textContent = 'Upload 4 photos and add captions to create your personalized photo grid';
+            
+            // Set container class
+            const container = document.getElementById('container');
+            container.className = 'container four-image';
+            
+            // Add grid items
+            container.innerHTML = `
+                <div class="item top-left" data-position="0">
+                    <div class="image-placeholder" onclick="triggerFileInput(0)">
+                        <div class="upload-prompt">
+                            <span class="icon">📷</span>
+                            <div class="text">Click to upload<br>photo</div>
+                        </div>
+                        <button class="remove-btn" onclick="removeImage(0, event)">×</button>
+                    </div>
+                    <textarea class="caption-input" placeholder="Add your caption here..." 
+                             onInput="updateCaption(0, this.value)"></textarea>
+                </div>
+                
+                <div class="item top-right" data-position="1">
+                    <div class="image-placeholder" onclick="triggerFileInput(1)">
+                        <div class="upload-prompt">
+                            <span class="icon">📷</span>
+                            <div class="text">Click to upload<br>photo</div>
+                        </div>
+                        <button class="remove-btn" onclick="removeImage(1, event)">×</button>
+                    </div>
+                    <textarea class="caption-input" placeholder="Add your caption here..." 
+                             onInput="updateCaption(1, this.value)"></textarea>
+                </div>
+                
+                <div class="item bottom-left" data-position="2">
+                    <div class="image-placeholder" onclick="triggerFileInput(2)">
+                        <div class="upload-prompt">
+                            <span class="icon">📷</span>
+                            <div class="text">Click to upload<br>photo</div>
+                        </div>
+                        <button class="remove-btn" onclick="removeImage(2, event)">×</button>
+                    </div>
+                    <textarea class="caption-input" placeholder="Add your caption here..." 
+                             onInput="updateCaption(2, this.value)"></textarea>
+                </div>
+                
+                <div class="item bottom-right" data-position="3">
+                    <div class="image-placeholder" onclick="triggerFileInput(3)">
+                        <div class="upload-prompt">
+                            <span class="icon">📷</span>
+                            <div class="text">Click to upload<br>photo</div>
+                        </div>
+                        <button class="remove-btn" onclick="removeImage(3, event)">×</button>
+                    </div>
+                    <textarea class="caption-input" placeholder="Add your caption here..." 
+                             onInput="updateCaption(3, this.value)"></textarea>
+                </div>
+            `;
+            
+            // Create file inputs
+            let fileInputsHTML = '';
+            for (let i = 0; i < 4; i++) {
+                fileInputsHTML += `<input type="file" id="fileInput${i}" class="hidden-input" accept="image/*" onchange="handleFileSelect(${i}, this)">`;
+            }
+            document.getElementById('fileInputContainer').innerHTML = fileInputsHTML;
+            
+            // Add drag and drop for four image layout
+            setupDragAndDrop();
+        }
         
         function triggerFileInput(position) {
             document.getElementById(`fileInput${position}`).click();
@@ -322,11 +786,13 @@
             }
             
             // Show loading indicator for large files
-            const placeholder = document.querySelector(`[data-position="${position}"] .image-placeholder`);
+            const placeholder = currentLayout === 'single' 
+                ? document.querySelector('.image-placeholder')
+                : document.querySelector(`[data-position="${position}"] .image-placeholder`);
             const uploadPrompt = placeholder.querySelector('.upload-prompt');
             
             if (file.size > 5 * 1024 * 1024) { // Show loading for files > 5MB
-                uploadPrompt.innerHTML = '<span class="icon">⏳</span><div>Processing large image...</div>';
+                uploadPrompt.innerHTML = '<span class="icon">⏳</span><div class="text">Processing large image...</div>';
             }
             
             const reader = new FileReader();
@@ -334,12 +800,24 @@
                 const img = new Image();
                 img.onload = function() {
                     // Store the original high-res image for PDF
-                    photos[position] = {
+                    const photoData = {
                         file: file,
                         dataUrl: e.target.result,
                         width: img.width,
                         height: img.height
                     };
+                    
+                    if (currentLayout === 'single') {
+                        photos = photoData;
+                        photos.cropX = 50;
+                        photos.cropY = 50;
+                        photos.cropZoom = 100;
+                    } else {
+                        photos[position] = photoData;
+                        photos[position].cropX = 50;
+                        photos[position].cropY = 50;
+                        photos[position].cropZoom = 100;
+                    }
                     
                     // Create optimized preview version for display
                     createOptimizedPreview(position, img, e.target.result);
@@ -354,29 +832,38 @@
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             
-            // Set preview dimensions (2x display size for retina screens)
-            const previewWidth = 250; // 2x the 125px display width
-            const previewHeight = 312; // 2x the 156px display height
+            // Set preview dimensions based on layout
+            let previewWidth, previewHeight;
+            if (currentLayout === 'single') {
+                previewWidth = 480;
+                previewHeight = 680;
+            } else {
+                previewWidth = 250;
+                previewHeight = 312;
+            }
             
             canvas.width = previewWidth;
             canvas.height = previewHeight;
             
-            // Calculate aspect ratio and crop/fit
+            // Calculate aspect ratio and check if cropping is needed
             const aspectRatio = originalImg.width / originalImg.height;
             const targetAspectRatio = previewWidth / previewHeight;
             
             let drawWidth, drawHeight, offsetX = 0, offsetY = 0;
+            let needsCropping = false;
             
             if (aspectRatio > targetAspectRatio) {
                 // Image is wider - fit height and crop width
                 drawHeight = previewHeight;
                 drawWidth = previewHeight * aspectRatio;
                 offsetX = (previewWidth - drawWidth) / 2;
+                needsCropping = Math.abs(aspectRatio - targetAspectRatio) > 0.1;
             } else {
                 // Image is taller - fit width and crop height
                 drawWidth = previewWidth;
                 drawHeight = previewWidth / aspectRatio;
                 offsetY = (previewHeight - drawHeight) / 2;
+                needsCropping = Math.abs(aspectRatio - targetAspectRatio) > 0.1;
             }
             
             // Draw optimized preview
@@ -386,15 +873,24 @@
             const optimizedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
             
             // Store optimized version for preview
-            photos[position].previewDataUrl = optimizedDataUrl;
+            if (currentLayout === 'single') {
+                photos.previewDataUrl = optimizedDataUrl;
+                photos.needsCropping = needsCropping;
+            } else {
+                photos[position].previewDataUrl = optimizedDataUrl;
+                photos[position].needsCropping = needsCropping;
+            }
             
             // Update the display with optimized preview
-            displayImage(position, optimizedDataUrl);
+            displayImage(position, optimizedDataUrl, needsCropping);
         }
         
-        function displayImage(position, dataUrl) {
-            const placeholder = document.querySelector(`[data-position="${position}"] .image-placeholder`);
+        function displayImage(position, dataUrl, needsCropping = false) {
+            const placeholder = currentLayout === 'single' 
+                ? document.querySelector('.image-placeholder')
+                : document.querySelector(`[data-position="${position}"] .image-placeholder`);
             const uploadPrompt = placeholder.querySelector('.upload-prompt');
+            const fitWarning = placeholder.querySelector('.fit-warning');
             
             // Hide upload prompt
             uploadPrompt.style.display = 'none';
@@ -406,24 +902,46 @@
                 placeholder.appendChild(imgElement);
             }
             
+            // Apply current crop settings
+            const photo = currentLayout === 'single' ? photos : photos[position];
+            const cropX = photo.cropX || 50;
+            const cropY = photo.cropY || 50;
+            const cropZoom = photo.cropZoom || 100;
+            
             imgElement.src = dataUrl;
-            imgElement.alt = `Uploaded photo ${position + 1}`;
+            imgElement.alt = currentLayout === 'single' ? 'Uploaded photo' : `Uploaded photo ${position + 1}`;
+            imgElement.style.setProperty('--crop-x', `${cropX}%`);
+            imgElement.style.setProperty('--crop-y', `${cropY}%`);
+            imgElement.style.transform = `scale(${cropZoom / 100})`;
             
             // Add has-image class for styling
             placeholder.classList.add('has-image');
+            
+            // Show/hide fit warning
+            if (needsCropping && fitWarning) {
+                fitWarning.style.display = 'block';
+            } else if (fitWarning) {
+                fitWarning.style.display = 'none';
+            }
         }
         
         function removeImage(position, event) {
             event.stopPropagation();
             
             // Clear stored data
-            photos[position] = null;
+            if (currentLayout === 'single') {
+                photos = null;
+            } else {
+                photos[position] = null;
+            }
             
             // Reset file input
             document.getElementById(`fileInput${position}`).value = '';
             
             // Update display
-            const placeholder = document.querySelector(`[data-position="${position}"] .image-placeholder`);
+            const placeholder = currentLayout === 'single' 
+                ? document.querySelector('.image-placeholder')
+                : document.querySelector(`[data-position="${position}"] .image-placeholder`);
             const imgElement = placeholder.querySelector('img');
             const uploadPrompt = placeholder.querySelector('.upload-prompt');
             
@@ -432,24 +950,154 @@
             }
             
             uploadPrompt.style.display = 'block';
+            if (currentLayout === 'single') {
+                uploadPrompt.innerHTML = '<span class="icon">📷</span><div class="text">Click to upload photo</div><div class="size">240 × 340 px</div>';
+            } else {
+                uploadPrompt.innerHTML = '<span class="icon">📷</span><div class="text">Click to upload<br>photo</div>';
+            }
             placeholder.classList.remove('has-image');
         }
         
         function updateCaption(position, text) {
-            captions[position] = text;
+            if (currentLayout === 'single') {
+                captions = text;
+            } else {
+                captions[position] = text;
+            }
         }
         
         function clearAll() {
-            if (confirm('Are you sure you want to clear all photos and captions?')) {
-                for (let i = 0; i < 4; i++) {
-                    removeImage(i, { stopPropagation: () => {} });
-                    document.querySelector(`[data-position="${i}"] .caption-input`).value = '';
-                    captions[i] = '';
+            const confirmMessage = currentLayout === 'single' 
+                ? 'Are you sure you want to clear the photo and caption?'
+                : 'Are you sure you want to clear all photos and captions?';
+                
+            if (confirm(confirmMessage)) {
+                if (currentLayout === 'single') {
+                    removeImage(0, { stopPropagation: () => {} });
+                    document.querySelector('.caption-input').value = '';
+                    captions = '';
+                } else {
+                    for (let i = 0; i < 4; i++) {
+                        removeImage(i, { stopPropagation: () => {} });
+                        document.querySelector(`[data-position="${i}"] .caption-input`).value = '';
+                        captions[i] = '';
+                    }
                 }
             }
         }
         
         function generatePDF() {
+            if (currentLayout === 'single') {
+                generateSingleImagePDF();
+            } else {
+                generateFourImagePDF();
+            }
+        }
+        
+        function generateSingleImagePDF() {
+            // Check if photo is uploaded
+            if (!photos) {
+                alert('Please upload a photo before generating PDF.');
+                return;
+            }
+            
+            try {
+                const { jsPDF } = window.jspdf;
+                
+                // A5 dimensions in points
+                const pageWidth = 420;
+                const pageHeight = 595;
+                const padding = 36;
+                
+                const pdf = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'pt',
+                    format: [pageWidth, pageHeight]
+                });
+                
+                // Calculate available space after padding
+                const availableWidth = pageWidth - (2 * padding);
+                const availableHeight = pageHeight - (2 * padding);
+                
+                // Container dimensions - use most of the page
+                const containerWidth = availableWidth;
+                const containerHeight = availableHeight;
+                const containerX = padding;
+                const containerY = padding;
+                
+                // Image dimensions - make image cover most of the page
+                const captionHeight = 60;
+                const imageWidth = containerWidth * 0.85;
+                const imageHeight = containerHeight - captionHeight - 40;
+                const imageX = containerX + (containerWidth - imageWidth) / 2;
+                const imageY = containerY + 30;
+                
+                // Draw decorative lines at the absolute edges of the PDF page
+                pdf.setDrawColor(0, 0, 0);
+                pdf.setLineWidth(1);
+                
+                // Top right corner lines
+                pdf.line(pageWidth - 75, 30, pageWidth, 30);
+                pdf.line(pageWidth - 20, 0, pageWidth - 20, 140);
+                pdf.line(pageWidth - 30, 0, pageWidth - 30, 80);
+                
+                // Bottom left corner lines
+                pdf.line(0, pageHeight - 30, 120, pageHeight - 30);
+                pdf.line(0, pageHeight - 44, 70, pageHeight - 44);
+                pdf.line(30, pageHeight - 90, 30, pageHeight);
+                
+                // Add image with proper aspect ratio
+                if (photos && photos.dataUrl) {
+                    try {
+                        const originalAspectRatio = photos.width / photos.height;
+                        const containerAspectRatio = imageWidth / imageHeight;
+                        
+                        let finalWidth, finalHeight, finalX, finalY;
+                        
+                        if (originalAspectRatio > containerAspectRatio) {
+                            finalWidth = imageWidth;
+                            finalHeight = imageWidth / originalAspectRatio;
+                            finalX = imageX;
+                            finalY = imageY + (imageHeight - finalHeight) / 2;
+                        } else {
+                            finalHeight = imageHeight;
+                            finalWidth = imageHeight * originalAspectRatio;
+                            finalX = imageX + (imageWidth - finalWidth) / 2;
+                            finalY = imageY;
+                        }
+                        
+                        pdf.addImage(photos.dataUrl, 'JPEG', finalX, finalY, finalWidth, finalHeight);
+                    } catch (imgError) {
+                        console.warn('Could not add image:', imgError);
+                    }
+                }
+                
+                // Add caption with DM Sans font - aligned with image boundaries
+                if (captions.trim()) {
+                    pdf.setTextColor(51, 51, 51);
+                    pdf.setFontSize(9);
+                    
+                    const captionY = imageY + imageHeight + 20;
+                    const captionX = imageX + imageWidth/2;
+                    
+                    const maxWidth = imageWidth - 10;
+                    const lines = pdf.splitTextToSize(captions, maxWidth);
+                    
+                    lines.forEach((line, lineIndex) => {
+                        pdf.text(line, captionX, captionY + (lineIndex * 12), { align: 'center' });
+                    });
+                }
+                
+                const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
+                pdf.save(`single-image-layout-${timestamp}.pdf`);
+                
+            } catch (error) {
+                console.error('PDF generation error:', error);
+                alert('There was an error generating the PDF. Please try again.');
+            }
+        }
+        
+        function generateFourImagePDF() {
             // Check if at least one photo is uploaded
             const hasPhotos = photos.some(photo => photo !== null);
             if (!hasPhotos) {
@@ -460,13 +1108,11 @@
             try {
                 const { jsPDF } = window.jspdf;
                 
-                // A5 dimensions in points (72 points per inch)
-                // A5 = 5.83 x 8.27 inches = 420 x 595 points
-                const pageWidth = 420; // points
-                const pageHeight = 595; // points
-                const padding = 36; // 0.5 inch = 36 points
+                // A5 dimensions in points
+                const pageWidth = 420;
+                const pageHeight = 595;
+                const padding = 36;
                 
-                // Create PDF with A5 size
                 const pdf = new jsPDF({
                     orientation: 'portrait',
                     unit: 'pt',
@@ -485,9 +1131,9 @@
                 const itemWidth = (availableWidth - gapSize) / gridCols;
                 const itemHeight = (availableHeight - gapSize) / gridRows;
                 
-                // Image dimensions within each item (leaving space for caption)
-                const captionHeight = 30; // Space reserved for caption
-                const imageWidth = itemWidth * 0.9; // 90% of item width
+                // Image dimensions within each item
+                const captionHeight = 30;
+                const imageWidth = itemWidth * 0.9;
                 const imageHeight = (itemHeight - captionHeight) * 0.9;
                 
                 const positions = [
@@ -512,12 +1158,10 @@
                     
                     // Add decorative borders for specific positions
                     if (pos.class === 'top-right') {
-                        // Draw shadow border (top-right offset)
                         pdf.setDrawColor(0, 0, 0);
                         pdf.setLineWidth(0.5);
                         pdf.rect(imageX + 8, imageY - 8, imageWidth, imageHeight);
                     } else if (pos.class === 'bottom-left') {
-                        // Draw shadow border (bottom-left offset)
                         pdf.setDrawColor(0, 0, 0);
                         pdf.setLineWidth(0.5);
                         pdf.rect(imageX - 8, imageY + 8, imageWidth, imageHeight);
@@ -533,31 +1177,20 @@
                             let finalWidth, finalHeight, finalX, finalY;
                             
                             if (originalAspectRatio > containerAspectRatio) {
-                                // Image is wider - fit to width, center vertically
                                 finalWidth = imageWidth;
                                 finalHeight = imageWidth / originalAspectRatio;
                                 finalX = imageX;
                                 finalY = imageY + (imageHeight - finalHeight) / 2;
                             } else {
-                                // Image is taller - fit to height, center horizontally
                                 finalHeight = imageHeight;
                                 finalWidth = imageHeight * originalAspectRatio;
                                 finalX = imageX + (imageWidth - finalWidth) / 2;
                                 finalY = imageY;
                             }
                             
-                            // Use original high-resolution image for PDF with proper aspect ratio
                             pdf.addImage(photo.dataUrl, 'JPEG', finalX, finalY, finalWidth, finalHeight);
                         } catch (imgError) {
                             console.warn(`Could not add image ${index + 1}:`, imgError);
-                            // Draw placeholder rectangle
-                            pdf.setFillColor(240, 240, 240);
-                            pdf.rect(imageX, imageY, imageWidth, imageHeight, 'F');
-                            
-                            // Add "No Image" text
-                            pdf.setTextColor(100, 100, 100);
-                            pdf.setFontSize(12);
-                            pdf.text('No Image', imageX + imageWidth/2, imageY + imageHeight/2, { align: 'center' });
                         }
                     } else {
                         // Draw placeholder for missing image
@@ -566,7 +1199,6 @@
                         pdf.setLineWidth(1);
                         pdf.rect(imageX, imageY, imageWidth, imageHeight, 'FD');
                         
-                        // Add placeholder text
                         pdf.setTextColor(150, 150, 150);
                         pdf.setFontSize(10);
                         pdf.text('Photo ' + (index + 1), imageX + imageWidth/2, imageY + imageHeight/2, { align: 'center' });
@@ -575,24 +1207,20 @@
                     // Add caption with DM Sans font
                     if (caption.trim()) {
                         pdf.setTextColor(0, 0, 0);
-                        pdf.setFontSize(9); // 9pt as requested
+                        pdf.setFontSize(9);
                         
-                        // Position caption below image
                         const captionY = imageY + imageHeight + 15;
                         const captionX = x + itemWidth/2;
                         
-                        // Split text into lines that fit within the item width
-                        const maxWidth = itemWidth - 10; // Small margin
+                        const maxWidth = itemWidth - 10;
                         const lines = pdf.splitTextToSize(caption, maxWidth);
                         
-                        // Center and add each line
                         lines.forEach((line, lineIndex) => {
                             pdf.text(line, captionX, captionY + (lineIndex * 12), { align: 'center' });
                         });
                     }
                 });
                 
-                // Save the PDF
                 const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
                 pdf.save(`family-photo-grid-${timestamp}.pdf`);
                 
@@ -602,36 +1230,100 @@
             }
         }
         
-        // Add drag and drop functionality
-        document.querySelectorAll('.image-placeholder').forEach((placeholder, index) => {
-            placeholder.addEventListener('dragover', function(e) {
-                e.preventDefault();
-                this.style.backgroundColor = '#e0e0e0';
-            });
-            
-            placeholder.addEventListener('dragleave', function(e) {
-                e.preventDefault();
-                this.style.backgroundColor = '';
-            });
-            
-            placeholder.addEventListener('drop', function(e) {
-                e.preventDefault();
-                this.style.backgroundColor = '';
+        function setupDragAndDrop() {
+            document.querySelectorAll('.image-placeholder').forEach((placeholder, index) => {
+                placeholder.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    this.style.backgroundColor = '#e0e0e0';
+                });
                 
-                const files = e.dataTransfer.files;
-                if (files.length > 0) {
-                    const file = files[0];
-                    if (file.type.startsWith('image/')) {
-                        // Simulate file input change
-                        const input = document.getElementById(`fileInput${index}`);
-                        const dt = new DataTransfer();
-                        dt.items.add(file);
-                        input.files = dt.files;
-                        handleFileSelect(index, input);
+                placeholder.addEventListener('dragleave', function(e) {
+                    e.preventDefault();
+                    this.style.backgroundColor = '';
+                });
+                
+                placeholder.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    this.style.backgroundColor = '';
+                    
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        const file = files[0];
+                        if (file.type.startsWith('image/')) {
+                            const input = document.getElementById(`fileInput${index}`);
+                            const dt = new DataTransfer();
+                            dt.items.add(file);
+                            input.files = dt.files;
+                            handleFileSelect(index, input);
+                        }
                     }
-                }
+                });
             });
-        });
+        }
+        
+        function openCropModal(position) {
+            const photo = currentLayout === 'single' ? photos : photos[position];
+            if (!photo) return;
+            
+            currentCropData = {
+                position: position,
+                photo: photo
+            };
+            
+            // Set up crop preview
+            const cropPreviewImg = document.getElementById('cropPreviewImg');
+            cropPreviewImg.src = photo.dataUrl;
+            
+            // Set up sliders with current values
+            document.getElementById('cropX').value = photo.cropX || 50;
+            document.getElementById('cropY').value = photo.cropY || 50;
+            document.getElementById('cropZoom').value = photo.cropZoom || 100;
+            
+            // Update preview
+            updateCropPreview();
+            
+            // Show modal
+            document.getElementById('cropOverlay').style.display = 'flex';
+        }
+        
+        function updateCropPreview() {
+            if (!currentCropData) return;
+            
+            const cropX = document.getElementById('cropX').value;
+            const cropY = document.getElementById('cropY').value;
+            const cropZoom = document.getElementById('cropZoom').value;
+            
+            const cropPreviewImg = document.getElementById('cropPreviewImg');
+            cropPreviewImg.style.setProperty('--crop-x', `${cropX}%`);
+            cropPreviewImg.style.setProperty('--crop-y', `${cropY}%`);
+            cropPreviewImg.style.transform = `scale(${cropZoom / 100})`;
+        }
+        
+        function applyCrop() {
+            if (!currentCropData) return;
+            
+            const cropX = document.getElementById('cropX').value;
+            const cropY = document.getElementById('cropY').value;
+            const cropZoom = document.getElementById('cropZoom').value;
+            
+            // Update photo data
+            const photo = currentCropData.photo;
+            photo.cropX = parseFloat(cropX);
+            photo.cropY = parseFloat(cropY);
+            photo.cropZoom = parseFloat(cropZoom);
+            
+            // Update display
+            const dataUrl = photo.previewDataUrl || photo.dataUrl;
+            displayImage(currentCropData.position, dataUrl, false);
+            
+            // Close modal
+            cancelCrop();
+        }
+        
+        function cancelCrop() {
+            document.getElementById('cropOverlay').style.display = 'none';
+            currentCropData = null;
+        }
     </script>
 </body>
 </html>
