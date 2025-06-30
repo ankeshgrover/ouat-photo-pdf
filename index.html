@@ -204,91 +204,9 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            object-position: center;
             display: block;
             z-index: 1;
             position: relative;
-        }
-        
-        .crop-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.8);
-            display: none;
-            z-index: 10;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-        }
-        
-        .crop-container {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            max-width: 90vw;
-            max-height: 90vh;
-            overflow: auto;
-        }
-        
-        .crop-preview {
-            max-width: 400px;
-            max-height: 400px;
-            border: 2px solid #ddd;
-            margin: 10px auto;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .crop-preview img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: var(--crop-x, center) var(--crop-y, center);
-        }
-        
-        .crop-controls {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        
-        .crop-slider-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .crop-slider-group label {
-            min-width: 80px;
-            font-size: 14px;
-        }
-        
-        .crop-slider {
-            flex: 1;
-            margin: 0 10px;
-        }
-        
-        .crop-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-top: 15px;
-        }
-        
-        .fit-warning {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            color: #856404;
-            padding: 8px 12px;
-            border-radius: 5px;
-            font-size: 12px;
-            margin-top: 5px;
-            text-align: center;
-            display: none;
         }
         
         .upload-prompt {
@@ -424,21 +342,6 @@
             background-color: #da190b;
         }
         
-        .crop-btn {
-            position: absolute;
-            bottom: -35px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 10px;
-            padding: 4px 8px;
-            display: none;
-            z-index: 3;
-        }
-        
-        .image-placeholder.has-image .crop-btn {
-            display: block;
-        }
-        
         /* Single image decorative lines */
         .line {
             position: absolute;
@@ -566,41 +469,6 @@
         
         <!-- Hidden file inputs (dynamically created) -->
         <div id="fileInputContainer"></div>
-        
-        <!-- Crop overlay -->
-        <div class="crop-overlay" id="cropOverlay">
-            <div class="crop-container">
-                <h3>Adjust Image Crop</h3>
-                <p>Adjust how your image will appear in the PDF:</p>
-                
-                <div class="crop-preview" id="cropPreview">
-                    <img id="cropPreviewImg" src="" alt="Crop preview">
-                </div>
-                
-                <div class="crop-controls">
-                    <div class="crop-slider-group">
-                        <label>Horizontal:</label>
-                        <input type="range" class="crop-slider" id="cropX" min="0" max="100" value="50" 
-                               onInput="updateCropPreview()">
-                    </div>
-                    <div class="crop-slider-group">
-                        <label>Vertical:</label>
-                        <input type="range" class="crop-slider" id="cropY" min="0" max="100" value="50" 
-                               onInput="updateCropPreview()">
-                    </div>
-                    <div class="crop-slider-group">
-                        <label>Zoom:</label>
-                        <input type="range" class="crop-slider" id="cropZoom" min="100" max="300" value="100" 
-                               onInput="updateCropPreview()">
-                    </div>
-                </div>
-                
-                <div class="crop-buttons">
-                    <button class="btn btn-secondary" onclick="cancelCrop()">Cancel</button>
-                    <button class="btn btn-primary" onclick="applyCrop()">Apply Crop</button>
-                </div>
-            </div>
-        </div>
     </div>
 
     <script>
@@ -608,7 +476,6 @@
         let currentLayout = null;
         let photos = null;
         let captions = null;
-        let currentCropData = null;
         
         function selectLayout(layout) {
             currentLayout = layout;
@@ -675,8 +542,6 @@
                             <div class="size">240 × 340 px</div>
                         </div>
                         <button class="remove-btn" onclick="removeImage(0, event)">×</button>
-                        <button class="btn btn-secondary crop-btn" onclick="openCropModal(0)">Crop</button>
-                        <div class="fit-warning">This image may not fit well. Consider cropping.</div>
                     </div>
                 </div>
                 
@@ -809,14 +674,8 @@
                     
                     if (currentLayout === 'single') {
                         photos = photoData;
-                        photos.cropX = 50;
-                        photos.cropY = 50;
-                        photos.cropZoom = 100;
                     } else {
                         photos[position] = photoData;
-                        photos[position].cropX = 50;
-                        photos[position].cropY = 50;
-                        photos[position].cropZoom = 100;
                     }
                     
                     // Create optimized preview version for display
@@ -835,35 +694,32 @@
             // Set preview dimensions based on layout
             let previewWidth, previewHeight;
             if (currentLayout === 'single') {
-                previewWidth = 480;
-                previewHeight = 680;
+                previewWidth = 480; // 2x the 240px display width
+                previewHeight = 680; // 2x the 340px display height
             } else {
-                previewWidth = 250;
-                previewHeight = 312;
+                previewWidth = 250; // 2x the 125px display width
+                previewHeight = 312; // 2x the 156px display height
             }
             
             canvas.width = previewWidth;
             canvas.height = previewHeight;
             
-            // Calculate aspect ratio and check if cropping is needed
+            // Calculate aspect ratio and crop/fit
             const aspectRatio = originalImg.width / originalImg.height;
             const targetAspectRatio = previewWidth / previewHeight;
             
             let drawWidth, drawHeight, offsetX = 0, offsetY = 0;
-            let needsCropping = false;
             
             if (aspectRatio > targetAspectRatio) {
                 // Image is wider - fit height and crop width
                 drawHeight = previewHeight;
                 drawWidth = previewHeight * aspectRatio;
                 offsetX = (previewWidth - drawWidth) / 2;
-                needsCropping = Math.abs(aspectRatio - targetAspectRatio) > 0.1;
             } else {
                 // Image is taller - fit width and crop height
                 drawWidth = previewWidth;
                 drawHeight = previewWidth / aspectRatio;
                 offsetY = (previewHeight - drawHeight) / 2;
-                needsCropping = Math.abs(aspectRatio - targetAspectRatio) > 0.1;
             }
             
             // Draw optimized preview
@@ -875,22 +731,19 @@
             // Store optimized version for preview
             if (currentLayout === 'single') {
                 photos.previewDataUrl = optimizedDataUrl;
-                photos.needsCropping = needsCropping;
             } else {
                 photos[position].previewDataUrl = optimizedDataUrl;
-                photos[position].needsCropping = needsCropping;
             }
             
             // Update the display with optimized preview
-            displayImage(position, optimizedDataUrl, needsCropping);
+            displayImage(position, optimizedDataUrl);
         }
         
-        function displayImage(position, dataUrl, needsCropping = false) {
+        function displayImage(position, dataUrl) {
             const placeholder = currentLayout === 'single' 
                 ? document.querySelector('.image-placeholder')
                 : document.querySelector(`[data-position="${position}"] .image-placeholder`);
             const uploadPrompt = placeholder.querySelector('.upload-prompt');
-            const fitWarning = placeholder.querySelector('.fit-warning');
             
             // Hide upload prompt
             uploadPrompt.style.display = 'none';
@@ -902,27 +755,11 @@
                 placeholder.appendChild(imgElement);
             }
             
-            // Apply current crop settings
-            const photo = currentLayout === 'single' ? photos : photos[position];
-            const cropX = photo.cropX || 50;
-            const cropY = photo.cropY || 50;
-            const cropZoom = photo.cropZoom || 100;
-            
             imgElement.src = dataUrl;
             imgElement.alt = currentLayout === 'single' ? 'Uploaded photo' : `Uploaded photo ${position + 1}`;
-            imgElement.style.setProperty('--crop-x', `${cropX}%`);
-            imgElement.style.setProperty('--crop-y', `${cropY}%`);
-            imgElement.style.transform = `scale(${cropZoom / 100})`;
             
             // Add has-image class for styling
             placeholder.classList.add('has-image');
-            
-            // Show/hide fit warning
-            if (needsCropping && fitWarning) {
-                fitWarning.style.display = 'block';
-            } else if (fitWarning) {
-                fitWarning.style.display = 'none';
-            }
         }
         
         function removeImage(position, event) {
@@ -1259,70 +1096,6 @@
                     }
                 });
             });
-        }
-        
-        function openCropModal(position) {
-            const photo = currentLayout === 'single' ? photos : photos[position];
-            if (!photo) return;
-            
-            currentCropData = {
-                position: position,
-                photo: photo
-            };
-            
-            // Set up crop preview
-            const cropPreviewImg = document.getElementById('cropPreviewImg');
-            cropPreviewImg.src = photo.dataUrl;
-            
-            // Set up sliders with current values
-            document.getElementById('cropX').value = photo.cropX || 50;
-            document.getElementById('cropY').value = photo.cropY || 50;
-            document.getElementById('cropZoom').value = photo.cropZoom || 100;
-            
-            // Update preview
-            updateCropPreview();
-            
-            // Show modal
-            document.getElementById('cropOverlay').style.display = 'flex';
-        }
-        
-        function updateCropPreview() {
-            if (!currentCropData) return;
-            
-            const cropX = document.getElementById('cropX').value;
-            const cropY = document.getElementById('cropY').value;
-            const cropZoom = document.getElementById('cropZoom').value;
-            
-            const cropPreviewImg = document.getElementById('cropPreviewImg');
-            cropPreviewImg.style.setProperty('--crop-x', `${cropX}%`);
-            cropPreviewImg.style.setProperty('--crop-y', `${cropY}%`);
-            cropPreviewImg.style.transform = `scale(${cropZoom / 100})`;
-        }
-        
-        function applyCrop() {
-            if (!currentCropData) return;
-            
-            const cropX = document.getElementById('cropX').value;
-            const cropY = document.getElementById('cropY').value;
-            const cropZoom = document.getElementById('cropZoom').value;
-            
-            // Update photo data
-            const photo = currentCropData.photo;
-            photo.cropX = parseFloat(cropX);
-            photo.cropY = parseFloat(cropY);
-            photo.cropZoom = parseFloat(cropZoom);
-            
-            // Update display
-            const dataUrl = photo.previewDataUrl || photo.dataUrl;
-            displayImage(currentCropData.position, dataUrl, false);
-            
-            // Close modal
-            cancelCrop();
-        }
-        
-        function cancelCrop() {
-            document.getElementById('cropOverlay').style.display = 'none';
-            currentCropData = null;
         }
     </script>
 </body>
