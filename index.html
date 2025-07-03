@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Photo Grid Creator</title>
+    <title>Photo Grid Creator - Universal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400&display=swap" rel="stylesheet">
@@ -103,9 +103,17 @@
             margin-bottom: 20px;
         }
         
+        .orientation-info {
+            background: #f0f8ff;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #666;
+            border-left: 4px solid #4CAF50;
+        }
+        
         .container {
-            width: 365px;
-            height: 490px;
             display: grid;
             gap: 10px;
             background-color: white;
@@ -114,29 +122,49 @@
             justify-content: center;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             position: relative;
+            transition: all 0.3s ease;
         }
         
-        /* Four image grid layout */
-        .container.four-image {
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: 1fr 1fr;
-        }
-        
-        /* Single image layout */
+        /* Dynamic container sizing */
         .container.single-image {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 40px;
+            min-width: 320px;
+            min-height: 400px;
+        }
+        
+        .container.four-image {
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            min-width: 400px;
+            min-height: 500px;
+        }
+        
+        /* Responsive container sizing based on orientation */
+        .container.portrait-optimized {
+            width: 365px;
+            height: 490px;
+        }
+        
+        .container.landscape-optimized {
+            width: 500px;
+            height: 400px;
+        }
+        
+        .container.mixed-orientation {
+            width: 450px;
+            height: 450px;
         }
         
         .item {
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 130px;
             place-self: center;
+            transition: all 0.3s ease;
         }
         
         .image-placeholder {
@@ -151,24 +179,45 @@
             background-color: #f9f9f9;
             cursor: pointer;
             transition: all 0.3s ease;
+            border-radius: 8px;
         }
         
-        /* Four image placeholder styling */
-        .four-image .image-placeholder {
+        /* Dynamic placeholder sizing */
+        .image-placeholder.portrait {
             width: 125px;
             height: 156px;
         }
         
-        /* Single image placeholder styling */
-        .single-image .image-placeholder {
+        .image-placeholder.landscape {
+            width: 180px;
+            height: 125px;
+        }
+        
+        .image-placeholder.square {
+            width: 140px;
+            height: 140px;
+        }
+        
+        /* Single image placeholder sizing */
+        .single-image .image-placeholder.portrait {
             width: 240px;
             height: 340px;
-            margin-bottom: 15px;
+        }
+        
+        .single-image .image-placeholder.landscape {
+            width: 400px;
+            height: 280px;
+        }
+        
+        .single-image .image-placeholder.square {
+            width: 320px;
+            height: 320px;
         }
         
         .image-placeholder:hover {
             border-color: #999;
             background-color: #f0f0f0;
+            transform: scale(1.02);
         }
         
         .image-placeholder.has-image {
@@ -181,11 +230,12 @@
             position: absolute;
             top: -8px;
             right: -8px;
-            width: 125px;
-            height: 156px;
+            width: 100%;
+            height: 100%;
             border: 1px solid black;
             background-color: transparent;
             z-index: 0;
+            border-radius: 8px;
         }
         
         .bottom-left .image-placeholder::before {
@@ -193,20 +243,23 @@
             position: absolute;
             bottom: -8px;
             left: -8px;
-            width: 125px;
-            height: 156px;
+            width: 100%;
+            height: 100%;
             border: 1px solid black;
             background-color: transparent;
             z-index: 0;
+            border-radius: 8px;
         }
         
         .image-placeholder img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
             display: block;
             z-index: 1;
             position: relative;
+            border-radius: 6px;
+            background-color: #f8f8f8;
         }
         
         .upload-prompt {
@@ -214,32 +267,22 @@
             color: #666;
             pointer-events: none;
             z-index: 1;
+            padding: 10px;
         }
         
         .upload-prompt .icon {
             margin-bottom: 5px;
             display: block;
+            font-size: 32px;
         }
         
-        .four-image .upload-prompt .icon {
-            font-size: 24px;
-        }
-        
-        .single-image .upload-prompt .icon {
-            font-size: 48px;
-            margin-bottom: 10px;
-        }
-        
-        .four-image .upload-prompt .text {
+        .upload-prompt .text {
             font-size: 12px;
+            line-height: 1.3;
         }
         
-        .single-image .upload-prompt .text {
-            font-size: 16px;
-        }
-        
-        .single-image .upload-prompt .size {
-            font-size: 12px;
+        .upload-prompt .size {
+            font-size: 10px;
             margin-top: 5px;
             color: #999;
         }
@@ -251,45 +294,29 @@
             min-height: 24px;
         }
         
-        .four-image .description {
-            font-size: 8px;
-            max-width: 130px;
-        }
-        
-        .single-image .description {
-            font-size: 9px;
-            max-width: 285px;
-            min-height: 30px;
-            color: #333;
-        }
-        
         .caption-input {
             width: 100%;
             border: none;
             background: transparent;
-            padding: 0;
+            padding: 5px;
             text-align: center;
             resize: none;
             font-family: 'DM Sans', Arial, sans-serif;
             overflow: hidden;
             word-wrap: break-word;
-        }
-        
-        .four-image .caption-input {
             font-size: 8px;
             line-height: 1.2;
             min-height: 24px;
             max-height: 60px;
-            max-width: 130px;
             color: #000;
+            border-radius: 4px;
         }
         
         .single-image .caption-input {
-            font-size: 9px;
+            font-size: 10px;
             line-height: 1.3;
             min-height: 30px;
-            max-height: 60px;
-            max-width: 285px;
+            max-width: 400px;
             color: #333;
         }
         
@@ -297,7 +324,6 @@
             outline: 1px solid #ccc;
             outline-offset: 2px;
             background-color: rgba(255, 255, 255, 0.8);
-            border-radius: 2px;
         }
         
         .caption-input::placeholder {
@@ -319,9 +345,6 @@
             z-index: 2;
             align-items: center;
             justify-content: center;
-        }
-        
-        .four-image .remove-btn {
             top: -5px;
             right: -5px;
         }
@@ -398,6 +421,8 @@
             display: flex;
             gap: 10px;
             margin-top: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
         }
         
         .btn {
@@ -426,25 +451,68 @@
         .btn-secondary:hover {
             background-color: #da190b;
         }
+        
+        .btn-tertiary {
+            background-color: #2196F3;
+            color: white;
+        }
+        
+        .btn-tertiary:hover {
+            background-color: #1976D2;
+        }
+        
+        .orientation-badge {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10px;
+            z-index: 3;
+            display: none;
+        }
+        
+        .image-placeholder.has-image .orientation-badge {
+            display: block;
+        }
+        
+        @media (max-width: 768px) {
+            .layout-options {
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .container {
+                min-width: 300px;
+                max-width: 90vw;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
     </style>
 </head>
 <body>
     <!-- Layout Selection Screen -->
     <div class="layout-selector" id="layoutSelector">
         <h1>Choose Your Photo Grid Layout</h1>
-        <p>Select the layout that best fits your needs</p>
+        <p>Automatically adapts to portrait, landscape, and mixed orientations</p>
         
         <div class="layout-options">
             <div class="layout-option" onclick="selectLayout('single')">
                 <span class="icon">🖼️</span>
                 <h3>Single Image</h3>
-                <p>Perfect for highlighting one special photo with decorative elements</p>
+                <p>Perfect for any photo orientation with smart auto-sizing</p>
             </div>
             
             <div class="layout-option" onclick="selectLayout('four')">
                 <span class="icon">🏞️</span>
                 <h3>Four Image Grid</h3>
-                <p>Create a beautiful collage with four photos and captions</p>
+                <p>Intelligent grid that adapts to mixed photo orientations</p>
             </div>
         </div>
     </div>
@@ -456,6 +524,9 @@
         <div class="title" id="titleSection">
             <h1 id="titleText">Create Your Photo Grid</h1>
             <p id="subtitleText">Upload photos and add captions to create your personalized layout</p>
+            <div class="orientation-info" id="orientationInfo" style="display: none;">
+                Layout automatically adjusted for your photo orientations
+            </div>
         </div>
         
         <div class="container" id="container">
@@ -464,6 +535,7 @@
         
         <div class="controls">
             <button class="btn btn-secondary" onclick="clearAll()">Clear All</button>
+            <button class="btn btn-tertiary" onclick="rotateImages()">Rotate All 90°</button>
             <button class="btn btn-primary" onclick="generatePDF()">Generate PDF</button>
         </div>
         
@@ -476,6 +548,7 @@
         let currentLayout = null;
         let photos = null;
         let captions = null;
+        let imageOrientations = null;
         
         function selectLayout(layout) {
             currentLayout = layout;
@@ -505,24 +578,100 @@
             currentLayout = null;
             photos = null;
             captions = null;
+            imageOrientations = null;
             
             // Clear container
             document.getElementById('container').innerHTML = '';
             document.getElementById('fileInputContainer').innerHTML = '';
+            document.getElementById('orientationInfo').style.display = 'none';
+        }
+        
+        function detectImageOrientation(width, height) {
+            const aspectRatio = width / height;
+            if (aspectRatio > 1.3) return 'landscape';
+            if (aspectRatio < 0.8) return 'portrait';
+            return 'square';
+        }
+        
+        function getDominantOrientation(orientations) {
+            if (!orientations) return 'portrait';
+            
+            if (currentLayout === 'single') {
+                return orientations || 'portrait';
+            }
+            
+            const counts = orientations.reduce((acc, orientation) => {
+                if (orientation) acc[orientation] = (acc[orientation] || 0) + 1;
+                return acc;
+            }, {});
+            
+            const dominantOrientation = Object.keys(counts).reduce((a, b) => 
+                counts[a] > counts[b] ? a : b, 'portrait');
+            
+            // Check if it's mixed
+            const orientationTypes = Object.keys(counts).length;
+            return orientationTypes > 1 ? 'mixed' : dominantOrientation;
+        }
+        
+        function updateContainerLayout() {
+            const container = document.getElementById('container');
+            const orientationInfo = document.getElementById('orientationInfo');
+            
+            if (currentLayout === 'single') {
+                const orientation = imageOrientations || 'portrait';
+                container.className = `container single-image ${orientation}-optimized`;
+                
+                // Update placeholder class
+                const placeholder = container.querySelector('.image-placeholder');
+                if (placeholder) {
+                    placeholder.className = `image-placeholder ${orientation}`;
+                }
+                
+                if (photos) {
+                    orientationInfo.style.display = 'block';
+                    orientationInfo.textContent = `Layout optimized for ${orientation} photo`;
+                }
+            } else {
+                const dominantOrientation = getDominantOrientation(imageOrientations);
+                
+                let layoutClass = 'portrait-optimized';
+                if (dominantOrientation === 'landscape') {
+                    layoutClass = 'landscape-optimized';
+                } else if (dominantOrientation === 'mixed') {
+                    layoutClass = 'mixed-orientation';
+                }
+                
+                container.className = `container four-image ${layoutClass}`;
+                
+                // Update individual placeholder classes
+                imageOrientations?.forEach((orientation, index) => {
+                    const placeholder = container.querySelector(`[data-position="${index}"] .image-placeholder`);
+                    if (placeholder && orientation) {
+                        placeholder.className = `image-placeholder ${orientation}`;
+                    }
+                });
+                
+                const hasPhotos = photos?.some(photo => photo !== null);
+                if (hasPhotos) {
+                    orientationInfo.style.display = 'block';
+                    orientationInfo.textContent = `Layout adjusted for ${dominantOrientation} orientation`;
+                }
+            }
         }
         
         function initializeSingleLayout() {
             // Initialize single layout variables
             photos = null;
             captions = '';
+            imageOrientations = 'portrait';
             
             // Update titles
             document.getElementById('titleText').textContent = 'Create Your Single Image Layout';
-            document.getElementById('subtitleText').textContent = 'Upload one photo and add a caption to create your personalized image layout';
+            document.getElementById('subtitleText').textContent = 'Upload any photo - layout automatically adapts to orientation';
             
             // Set container class
             const container = document.getElementById('container');
-            container.className = 'container single-image';
+            container.className = 'container single-image portrait-optimized';
             
             // Add decorative lines
             container.innerHTML = `
@@ -535,11 +684,12 @@
                 <div class="line bottom-left-short-horizontal"></div>
                 
                 <div class="image-container">
-                    <div class="image-placeholder" onclick="triggerFileInput(0)">
+                    <div class="image-placeholder portrait" onclick="triggerFileInput(0)">
+                        <div class="orientation-badge">Auto</div>
                         <div class="upload-prompt">
                             <span class="icon">📷</span>
                             <div class="text">Click to upload photo</div>
-                            <div class="size">240 × 340 px</div>
+                            <div class="size">Any orientation</div>
                         </div>
                         <button class="remove-btn" onclick="removeImage(0, event)">×</button>
                     </div>
@@ -559,22 +709,25 @@
             // Initialize four layout variables
             photos = [null, null, null, null];
             captions = ['', '', '', ''];
+            imageOrientations = [null, null, null, null];
             
             // Update titles
-            document.getElementById('titleText').textContent = 'Create Your Family Photo Grid';
-            document.getElementById('subtitleText').textContent = 'Upload 4 photos and add captions to create your personalized photo grid';
+            document.getElementById('titleText').textContent = 'Create Your Smart Photo Grid';
+            document.getElementById('subtitleText').textContent = 'Upload photos in any orientation - grid adapts automatically';
             
             // Set container class
             const container = document.getElementById('container');
-            container.className = 'container four-image';
+            container.className = 'container four-image portrait-optimized';
             
             // Add grid items
             container.innerHTML = `
                 <div class="item top-left" data-position="0">
-                    <div class="image-placeholder" onclick="triggerFileInput(0)">
+                    <div class="image-placeholder portrait" onclick="triggerFileInput(0)">
+                        <div class="orientation-badge">Auto</div>
                         <div class="upload-prompt">
                             <span class="icon">📷</span>
                             <div class="text">Click to upload<br>photo</div>
+                            <div class="size">Any size</div>
                         </div>
                         <button class="remove-btn" onclick="removeImage(0, event)">×</button>
                     </div>
@@ -583,10 +736,12 @@
                 </div>
                 
                 <div class="item top-right" data-position="1">
-                    <div class="image-placeholder" onclick="triggerFileInput(1)">
+                    <div class="image-placeholder portrait" onclick="triggerFileInput(1)">
+                        <div class="orientation-badge">Auto</div>
                         <div class="upload-prompt">
                             <span class="icon">📷</span>
                             <div class="text">Click to upload<br>photo</div>
+                            <div class="size">Any size</div>
                         </div>
                         <button class="remove-btn" onclick="removeImage(1, event)">×</button>
                     </div>
@@ -595,10 +750,12 @@
                 </div>
                 
                 <div class="item bottom-left" data-position="2">
-                    <div class="image-placeholder" onclick="triggerFileInput(2)">
+                    <div class="image-placeholder portrait" onclick="triggerFileInput(2)">
+                        <div class="orientation-badge">Auto</div>
                         <div class="upload-prompt">
                             <span class="icon">📷</span>
                             <div class="text">Click to upload<br>photo</div>
+                            <div class="size">Any size</div>
                         </div>
                         <button class="remove-btn" onclick="removeImage(2, event)">×</button>
                     </div>
@@ -607,10 +764,12 @@
                 </div>
                 
                 <div class="item bottom-right" data-position="3">
-                    <div class="image-placeholder" onclick="triggerFileInput(3)">
+                    <div class="image-placeholder portrait" onclick="triggerFileInput(3)">
+                        <div class="orientation-badge">Auto</div>
                         <div class="upload-prompt">
                             <span class="icon">📷</span>
                             <div class="text">Click to upload<br>photo</div>
+                            <div class="size">Any size</div>
                         </div>
                         <button class="remove-btn" onclick="removeImage(3, event)">×</button>
                     </div>
@@ -664,65 +823,85 @@
             reader.onload = function(e) {
                 const img = new Image();
                 img.onload = function() {
+                    // Detect orientation
+                    const orientation = detectImageOrientation(img.width, img.height);
+                    
                     // Store the original high-res image for PDF
                     const photoData = {
                         file: file,
                         dataUrl: e.target.result,
                         width: img.width,
-                        height: img.height
+                        height: img.height,
+                        orientation: orientation
                     };
                     
                     if (currentLayout === 'single') {
                         photos = photoData;
+                        imageOrientations = orientation;
                     } else {
                         photos[position] = photoData;
+                        imageOrientations[position] = orientation;
                     }
                     
+                    // Update orientation badge
+                    const badge = placeholder.querySelector('.orientation-badge');
+                    if (badge) {
+                        badge.textContent = orientation.charAt(0).toUpperCase() + orientation.slice(1);
+                    }
+                    
+                    // Update container layout based on new orientations
+                    updateContainerLayout();
+                    
                     // Create optimized preview version for display
-                    createOptimizedPreview(position, img, e.target.result);
+                    createOptimizedPreview(position, img, e.target.result, orientation);
                 };
                 img.src = e.target.result;
             };
             reader.readAsDataURL(file);
         }
         
-        function createOptimizedPreview(position, originalImg, originalDataUrl) {
+        function createOptimizedPreview(position, originalImg, originalDataUrl, orientation) {
             // Create a canvas for optimized preview
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             
-            // Set preview dimensions based on layout
-            let previewWidth, previewHeight;
-            if (currentLayout === 'single') {
-                previewWidth = 480; // 2x the 240px display width
-                previewHeight = 680; // 2x the 340px display height
-            } else {
-                previewWidth = 250; // 2x the 125px display width
-                previewHeight = 312; // 2x the 156px display height
-            }
+            // Get current placeholder dimensions
+            const placeholder = currentLayout === 'single' 
+                ? document.querySelector('.image-placeholder')
+                : document.querySelector(`[data-position="${position}"] .image-placeholder`);
+            
+            const placeholderRect = placeholder.getBoundingClientRect();
+            const previewWidth = Math.floor(placeholderRect.width * 2); // 2x for retina
+            const previewHeight = Math.floor(placeholderRect.height * 2);
             
             canvas.width = previewWidth;
             canvas.height = previewHeight;
             
-            // Calculate aspect ratio and crop/fit
+            // Fill canvas with background color to match CSS
+            ctx.fillStyle = '#f8f8f8';
+            ctx.fillRect(0, 0, previewWidth, previewHeight);
+            
+            // Calculate aspect ratio and scale to fit (contain, not cover) - match PDF logic
             const aspectRatio = originalImg.width / originalImg.height;
             const targetAspectRatio = previewWidth / previewHeight;
             
-            let drawWidth, drawHeight, offsetX = 0, offsetY = 0;
+            let drawWidth, drawHeight, offsetX, offsetY;
             
             if (aspectRatio > targetAspectRatio) {
-                // Image is wider - fit height and crop width
+                // Image is wider - fit width and center vertically
+                drawWidth = previewWidth;
+                drawHeight = previewWidth / aspectRatio;
+                offsetX = 0;
+                offsetY = (previewHeight - drawHeight) / 2;
+            } else {
+                // Image is taller - fit height and center horizontally
                 drawHeight = previewHeight;
                 drawWidth = previewHeight * aspectRatio;
                 offsetX = (previewWidth - drawWidth) / 2;
-            } else {
-                // Image is taller - fit width and crop height
-                drawWidth = previewWidth;
-                drawHeight = previewWidth / aspectRatio;
-                offsetY = (previewHeight - drawHeight) / 2;
+                offsetY = 0;
             }
             
-            // Draw optimized preview
+            // Draw the full image scaled to fit (no cropping)
             ctx.drawImage(originalImg, offsetX, offsetY, drawWidth, drawHeight);
             
             // Get optimized data URL with compression
@@ -768,8 +947,10 @@
             // Clear stored data
             if (currentLayout === 'single') {
                 photos = null;
+                imageOrientations = 'portrait';
             } else {
                 photos[position] = null;
+                imageOrientations[position] = null;
             }
             
             // Reset file input
@@ -781,18 +962,30 @@
                 : document.querySelector(`[data-position="${position}"] .image-placeholder`);
             const imgElement = placeholder.querySelector('img');
             const uploadPrompt = placeholder.querySelector('.upload-prompt');
+            const badge = placeholder.querySelector('.orientation-badge');
             
             if (imgElement) {
                 imgElement.remove();
             }
             
-            uploadPrompt.style.display = 'block';
-            if (currentLayout === 'single') {
-                uploadPrompt.innerHTML = '<span class="icon">📷</span><div class="text">Click to upload photo</div><div class="size">240 × 340 px</div>';
-            } else {
-                uploadPrompt.innerHTML = '<span class="icon">📷</span><div class="text">Click to upload<br>photo</div>';
+            if (badge) {
+                badge.textContent = 'Auto';
             }
+            
+            uploadPrompt.style.display = 'block';
+            uploadPrompt.innerHTML = '<span class="icon">📷</span><div class="text">Click to upload<br>photo</div><div class="size">Any size</div>';
             placeholder.classList.remove('has-image');
+            
+            // Update container layout
+            updateContainerLayout();
+            
+            // Hide orientation info if no photos
+            const hasPhotos = currentLayout === 'single' ? 
+                photos !== null : 
+                photos?.some(photo => photo !== null);
+            if (!hasPhotos) {
+                document.getElementById('orientationInfo').style.display = 'none';
+            }
         }
         
         function updateCaption(position, text) {
@@ -816,11 +1009,81 @@
                 } else {
                     for (let i = 0; i < 4; i++) {
                         removeImage(i, { stopPropagation: () => {} });
-                        document.querySelector(`[data-position="${i}"] .caption-input`).value = '';
-                        captions[i] = '';
+                        const captionInput = document.querySelector(`[data-position="${i}"] .caption-input`);
+                        if (captionInput) {
+                            captionInput.value = '';
+                            captions[i] = '';
+                        }
                     }
                 }
             }
+        }
+        
+        function rotateImages() {
+            if (currentLayout === 'single') {
+                if (!photos) {
+                    alert('Please upload a photo first.');
+                    return;
+                }
+                rotateImage(photos, 0);
+            } else {
+                const hasPhotos = photos?.some(photo => photo !== null);
+                if (!hasPhotos) {
+                    alert('Please upload at least one photo first.');
+                    return;
+                }
+                photos.forEach((photo, index) => {
+                    if (photo) rotateImage(photo, index);
+                });
+            }
+        }
+        
+        function rotateImage(photo, position) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            
+            img.onload = function() {
+                // Swap dimensions for 90-degree rotation
+                canvas.width = img.height;
+                canvas.height = img.width;
+                
+                // Rotate and draw
+                ctx.translate(canvas.width / 2, canvas.height / 2);
+                ctx.rotate(Math.PI / 2);
+                ctx.drawImage(img, -img.width / 2, -img.height / 2);
+                
+                // Update photo data
+                const newDataUrl = canvas.toDataURL('image/jpeg', 0.9);
+                photo.dataUrl = newDataUrl;
+                photo.width = canvas.width;
+                photo.height = canvas.height;
+                
+                // Update orientation
+                const newOrientation = detectImageOrientation(canvas.width, canvas.height);
+                photo.orientation = newOrientation;
+                
+                if (currentLayout === 'single') {
+                    imageOrientations = newOrientation;
+                } else {
+                    imageOrientations[position] = newOrientation;
+                }
+                
+                // Update display
+                updateContainerLayout();
+                createOptimizedPreview(position, img, newDataUrl, newOrientation);
+                
+                // Update orientation badge
+                const placeholder = currentLayout === 'single' 
+                    ? document.querySelector('.image-placeholder')
+                    : document.querySelector(`[data-position="${position}"] .image-placeholder`);
+                const badge = placeholder?.querySelector('.orientation-badge');
+                if (badge) {
+                    badge.textContent = newOrientation.charAt(0).toUpperCase() + newOrientation.slice(1);
+                }
+            };
+            
+            img.src = photo.dataUrl;
         }
         
         function generatePDF() {
@@ -841,10 +1104,10 @@
             try {
                 const { jsPDF } = window.jspdf;
                 
-                // A5 dimensions in points
+                // Always use portrait A5 dimensions in points (0.5 inch = 36 points margin)
                 const pageWidth = 420;
                 const pageHeight = 595;
-                const padding = 36;
+                const padding = 36; // 0.5 inch margins
                 
                 const pdf = new jsPDF({
                     orientation: 'portrait',
@@ -864,55 +1127,50 @@
                 
                 // Image dimensions - make image cover most of the page
                 const captionHeight = 60;
-                const imageWidth = containerWidth * 0.85;
-                const imageHeight = containerHeight - captionHeight - 40;
-                const imageX = containerX + (containerWidth - imageWidth) / 2;
-                const imageY = containerY + 30;
+                const maxImageWidth = containerWidth * 0.85;
+                const maxImageHeight = containerHeight - captionHeight - 40;
                 
-                // Draw decorative lines at the absolute edges of the PDF page
+                // Calculate actual image size maintaining aspect ratio
+                const imageAspectRatio = photos.width / photos.height;
+                let imageWidth, imageHeight;
+                
+                if (imageAspectRatio > maxImageWidth / maxImageHeight) {
+                    imageWidth = maxImageWidth;
+                    imageHeight = maxImageWidth / imageAspectRatio;
+                } else {
+                    imageHeight = maxImageHeight;
+                    imageWidth = maxImageHeight * imageAspectRatio;
+                }
+                
+                const imageX = containerX + (containerWidth - imageWidth) / 2;
+                const imageY = containerY + (containerHeight - captionHeight - imageHeight) / 2;
+                
+                // Draw decorative lines at the absolute edges of the PDF page (always portrait)
                 pdf.setDrawColor(0, 0, 0);
                 pdf.setLineWidth(1);
                 
-                // Top right corner lines
+                // Portrait decorative lines (always the same regardless of image orientation)
                 pdf.line(pageWidth - 75, 30, pageWidth, 30);
                 pdf.line(pageWidth - 20, 0, pageWidth - 20, 140);
                 pdf.line(pageWidth - 30, 0, pageWidth - 30, 80);
                 
-                // Bottom left corner lines
                 pdf.line(0, pageHeight - 30, 120, pageHeight - 30);
                 pdf.line(0, pageHeight - 44, 70, pageHeight - 44);
                 pdf.line(30, pageHeight - 90, 30, pageHeight);
                 
-                // Add image with proper aspect ratio
+                // Add image
                 if (photos && photos.dataUrl) {
                     try {
-                        const originalAspectRatio = photos.width / photos.height;
-                        const containerAspectRatio = imageWidth / imageHeight;
-                        
-                        let finalWidth, finalHeight, finalX, finalY;
-                        
-                        if (originalAspectRatio > containerAspectRatio) {
-                            finalWidth = imageWidth;
-                            finalHeight = imageWidth / originalAspectRatio;
-                            finalX = imageX;
-                            finalY = imageY + (imageHeight - finalHeight) / 2;
-                        } else {
-                            finalHeight = imageHeight;
-                            finalWidth = imageHeight * originalAspectRatio;
-                            finalX = imageX + (imageWidth - finalWidth) / 2;
-                            finalY = imageY;
-                        }
-                        
-                        pdf.addImage(photos.dataUrl, 'JPEG', finalX, finalY, finalWidth, finalHeight);
+                        pdf.addImage(photos.dataUrl, 'JPEG', imageX, imageY, imageWidth, imageHeight);
                     } catch (imgError) {
                         console.warn('Could not add image:', imgError);
                     }
                 }
                 
-                // Add caption with DM Sans font - aligned with image boundaries
+                // Add caption - positioned below image
                 if (captions.trim()) {
                     pdf.setTextColor(51, 51, 51);
-                    pdf.setFontSize(9);
+                    pdf.setFontSize(10);
                     
                     const captionY = imageY + imageHeight + 20;
                     const captionX = imageX + imageWidth/2;
@@ -921,12 +1179,13 @@
                     const lines = pdf.splitTextToSize(captions, maxWidth);
                     
                     lines.forEach((line, lineIndex) => {
-                        pdf.text(line, captionX, captionY + (lineIndex * 12), { align: 'center' });
+                        pdf.text(line, captionX, captionY + (lineIndex * 14), { align: 'center' });
                     });
                 }
                 
                 const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
-                pdf.save(`single-image-layout-${timestamp}.pdf`);
+                const orientationLabel = photos.orientation;
+                pdf.save(`single-image-${orientationLabel}-${timestamp}.pdf`);
                 
             } catch (error) {
                 console.error('PDF generation error:', error);
@@ -945,10 +1204,10 @@
             try {
                 const { jsPDF } = window.jspdf;
                 
-                // A5 dimensions in points
+                // Always use portrait A5 dimensions in points (0.5 inch = 36 points margin)
                 const pageWidth = 420;
                 const pageHeight = 595;
-                const padding = 36;
+                const padding = 36; // 0.5 inch margins
                 
                 const pdf = new jsPDF({
                     orientation: 'portrait',
@@ -963,15 +1222,10 @@
                 // Grid layout calculations
                 const gridCols = 2;
                 const gridRows = 2;
-                const gapSize = 10;
+                const gapSize = 12;
                 
                 const itemWidth = (availableWidth - gapSize) / gridCols;
                 const itemHeight = (availableHeight - gapSize) / gridRows;
-                
-                // Image dimensions within each item
-                const captionHeight = 30;
-                const imageWidth = itemWidth * 0.9;
-                const imageHeight = (itemHeight - captionHeight) * 0.9;
                 
                 const positions = [
                     { row: 0, col: 0, class: 'top-left' },
@@ -984,47 +1238,65 @@
                 positions.forEach((pos, index) => {
                     const photo = photos[index];
                     const caption = captions[index];
+                    const orientation = imageOrientations[index];
                     
                     // Calculate position
                     const x = padding + (pos.col * (itemWidth + gapSize));
                     const y = padding + (pos.row * (itemHeight + gapSize));
                     
-                    // Center image within item
-                    const imageX = x + (itemWidth - imageWidth) / 2;
-                    const imageY = y + (itemHeight - imageHeight - captionHeight) / 2;
+                    // Dynamic image dimensions based on orientation
+                    const captionHeight = 35;
+                    let maxImageWidth = itemWidth * 0.9;
+                    let maxImageHeight = (itemHeight - captionHeight) * 0.85;
                     
-                    // Add decorative borders for specific positions
+                    // Adjust for landscape images in grid
+                    if (orientation === 'landscape') {
+                        maxImageWidth = itemWidth * 0.95;
+                        maxImageHeight = (itemHeight - captionHeight) * 0.75;
+                    }
+                    
+                    // Center image within item
+                    const imageX = x + (itemWidth - maxImageWidth) / 2;
+                    const imageY = y + (itemHeight - maxImageHeight - captionHeight) / 2;
+                    
+                    // Calculate actual final image dimensions for decorative borders
+                    let finalWidth = maxImageWidth;
+                    let finalHeight = maxImageHeight;
+                    let finalX = imageX;
+                    let finalY = imageY;
+                    
+                    // If photo exists, calculate actual positioned dimensions
+                    if (photo && photo.dataUrl) {
+                        const originalAspectRatio = photo.width / photo.height;
+                        const containerAspectRatio = maxImageWidth / maxImageHeight;
+                        
+                        if (originalAspectRatio > containerAspectRatio) {
+                            finalWidth = maxImageWidth;
+                            finalHeight = maxImageWidth / originalAspectRatio;
+                            finalX = imageX;
+                            finalY = imageY + (maxImageHeight - finalHeight) / 2;
+                        } else {
+                            finalHeight = maxImageHeight;
+                            finalWidth = maxImageHeight * originalAspectRatio;
+                            finalX = imageX + (maxImageWidth - finalWidth) / 2;
+                            finalY = imageY;
+                        }
+                    }
+                    
+                    // Add decorative borders for specific positions using actual image dimensions
                     if (pos.class === 'top-right') {
                         pdf.setDrawColor(0, 0, 0);
                         pdf.setLineWidth(0.5);
-                        pdf.rect(imageX + 8, imageY - 8, imageWidth, imageHeight);
+                        pdf.rect(finalX + 6, finalY - 6, finalWidth, finalHeight);
                     } else if (pos.class === 'bottom-left') {
                         pdf.setDrawColor(0, 0, 0);
                         pdf.setLineWidth(0.5);
-                        pdf.rect(imageX - 8, imageY + 8, imageWidth, imageHeight);
+                        pdf.rect(finalX - 6, finalY + 6, finalWidth, finalHeight);
                     }
                     
                     // Add image if available
                     if (photo && photo.dataUrl) {
                         try {
-                            // Calculate proper scaling to maintain aspect ratio
-                            const originalAspectRatio = photo.width / photo.height;
-                            const containerAspectRatio = imageWidth / imageHeight;
-                            
-                            let finalWidth, finalHeight, finalX, finalY;
-                            
-                            if (originalAspectRatio > containerAspectRatio) {
-                                finalWidth = imageWidth;
-                                finalHeight = imageWidth / originalAspectRatio;
-                                finalX = imageX;
-                                finalY = imageY + (imageHeight - finalHeight) / 2;
-                            } else {
-                                finalHeight = imageHeight;
-                                finalWidth = imageHeight * originalAspectRatio;
-                                finalX = imageX + (imageWidth - finalWidth) / 2;
-                                finalY = imageY;
-                            }
-                            
                             pdf.addImage(photo.dataUrl, 'JPEG', finalX, finalY, finalWidth, finalHeight);
                         } catch (imgError) {
                             console.warn(`Could not add image ${index + 1}:`, imgError);
@@ -1034,23 +1306,23 @@
                         pdf.setFillColor(249, 249, 249);
                         pdf.setDrawColor(200, 200, 200);
                         pdf.setLineWidth(1);
-                        pdf.rect(imageX, imageY, imageWidth, imageHeight, 'FD');
+                        pdf.rect(finalX, finalY, finalWidth, finalHeight, 'FD');
                         
                         pdf.setTextColor(150, 150, 150);
                         pdf.setFontSize(10);
-                        pdf.text('Photo ' + (index + 1), imageX + imageWidth/2, imageY + imageHeight/2, { align: 'center' });
+                        pdf.text('Photo ' + (index + 1), finalX + finalWidth/2, finalY + finalHeight/2, { align: 'center' });
                     }
                     
-                    // Add caption with DM Sans font
+                    // Add caption
                     if (caption.trim()) {
                         pdf.setTextColor(0, 0, 0);
                         pdf.setFontSize(9);
                         
-                        const captionY = imageY + imageHeight + 15;
+                        const captionY = finalY + finalHeight + 15;
                         const captionX = x + itemWidth/2;
                         
-                        const maxWidth = itemWidth - 10;
-                        const lines = pdf.splitTextToSize(caption, maxWidth);
+                        const maxCaptionWidth = itemWidth - 10;
+                        const lines = pdf.splitTextToSize(caption, maxCaptionWidth);
                         
                         lines.forEach((line, lineIndex) => {
                             pdf.text(line, captionX, captionY + (lineIndex * 12), { align: 'center' });
@@ -1059,7 +1331,8 @@
                 });
                 
                 const timestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '');
-                pdf.save(`family-photo-grid-${timestamp}.pdf`);
+                const dominantOrientation = getDominantOrientation(imageOrientations);
+                pdf.save(`photo-grid-${dominantOrientation}-${timestamp}.pdf`);
                 
             } catch (error) {
                 console.error('PDF generation error:', error);
@@ -1072,16 +1345,19 @@
                 placeholder.addEventListener('dragover', function(e) {
                     e.preventDefault();
                     this.style.backgroundColor = '#e0e0e0';
+                    this.style.transform = 'scale(1.05)';
                 });
                 
                 placeholder.addEventListener('dragleave', function(e) {
                     e.preventDefault();
                     this.style.backgroundColor = '';
+                    this.style.transform = '';
                 });
                 
                 placeholder.addEventListener('drop', function(e) {
                     e.preventDefault();
                     this.style.backgroundColor = '';
+                    this.style.transform = '';
                     
                     const files = e.dataTransfer.files;
                     if (files.length > 0) {
